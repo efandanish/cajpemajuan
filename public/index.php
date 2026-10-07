@@ -1,4 +1,10 @@
 <?php
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 
 /*
 |--------------------------------------------------------------------------
@@ -9,7 +15,7 @@
 |
 */
 
-require  '../vendor/autoload.php';
+require '../vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
@@ -28,8 +34,8 @@ require  '../vendor/autoload.php';
 // Config::set('app', Config::get('base') . "/app/");
 
 define('BASE_DIR', str_replace("\\", "/", dirname(__DIR__)));
-define('IMAGES',   str_replace("\\", "/", __DIR__) . "/img/");
-define('APP',  BASE_DIR . "/app/");
+define('IMAGES', str_replace("\\", "/", __DIR__) . "/img/");
+define('APP', BASE_DIR . "/app/");
 
 /*
 |--------------------------------------------------------------------------

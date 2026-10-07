@@ -1,165 +1,515 @@
 <?php
 
-/**
- * User controller
- *
- * @license    http://opensource.org/licenses/MIT The MIT License (MIT)
- * @author     Omar El Gabry <omar.elgabry.93@gmail.com>
- */
+class UserController extends Controller
+{
+    public function initialize()
+    {
+        $this->loadComponents([]);
 
-class UserController extends Controller{
+        $this->loadModel('User');
+        $this->loadModel('Notification');
 
-    public function beforeAction(){
 
-        parent::beforeAction();
+        if (
+            session_status() ===
+            PHP_SESSION_NONE
+        ) {
+            session_start();
+        }
 
-        $action = $this->request->param('action');
-        $actions = ['updateProfileInfo', 'updateProfilePicture', 'reportBug'];
-        $this->Security->requirePost($actions);
 
-        switch($action){
-            case "updateProfileInfo":
-                $this->Security->config("form", [ 'fields' => ['name', 'password', 'email', 'confirm_email']]);
-                break;
-            case "updateProfilePicture":
-                $this->Security->config("form", [ 'fields' => ['file']]);
-                break;
-            case "reportBug":
-                $this->Security->config("form", [ 'fields' => ['subject', 'label', 'message']]);
-                break;
+        /*
+        |--------------------------------------------------------------------------
+        | LOGIN REQUIRED
+        |--------------------------------------------------------------------------
+        */
+
+        if (empty($_SESSION['user_id'])) {
+
+            header(
+                'Location: /cajpemajuan/auth'
+            );
+
+            exit;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN ONLY
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($_SESSION['user_role']) ||
+            $_SESSION['user_role'] !== 'admin'
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=unauthorized'
+            );
+
+            exit;
         }
     }
 
-    /**
-     * show dashboard page
-     *
-     */
-    public function index(){
 
-        Config::setJsConfig('curPage', "dashboard");
-        $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'dashboard/index.php');
-    }
+    public function create()
+    {
+        if (
+            $_SERVER['REQUEST_METHOD']
+            !==
+            'POST'
+        ) {
 
-    public function profile(){
+            header(
+                'Location: /cajpemajuan/dashboard'
+            );
 
-        Config::setJsConfig('curPage', "profile");
-        $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'user/profile.php');
-    }
-
-    public function updateProfileInfo(){
-
-        $name           = $this->request->data("name");
-        $password       = $this->request->data("password");
-        $email          = $this->request->data("email");
-        $confirmEmail   = $this->request->data("confirm_email");
-
-        $result = $this->user->updateProfileInfo(Session::getUserId(), $name, $password, $email, $confirmEmail);
-
-        if(!$result){
-
-            Session::set('profile-info-errors', $this->user->errors());
-
-        }else{
-
-            $message  = "Your Profile has been updated. ";
-            $message .= $result["emailUpdated"]? "Please check your new email to confirm the changes, or your current email to revoke the changes": "";
-
-            Session::set('profile-info-success', $message);
+            exit;
         }
 
-        return $this->redirector->root("User/Profile");
-    }
 
-    public function updateProfilePicture(){
+        $name =
+            isset($_POST['name'])
+            ? trim($_POST['name'])
+            : '';
 
-        $fileData   = $this->request->data("file");
-        $image      = $this->user->updateProfilePicture(Session::getUserId(), $fileData);
 
-        if(!$image){
-            Session::set('profile-picture-errors', $this->user->errors());
+        $email =
+            isset($_POST['email'])
+            ? trim($_POST['email'])
+            : '';
+
+
+        $password =
+            isset($_POST['password'])
+            ? $_POST['password']
+            : '';
+
+
+        $role =
+            isset($_POST['role'])
+            ? $_POST['role']
+            : 'user';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($name) ||
+            empty($email) ||
+            empty($password)
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_required'
+            );
+
+            exit;
         }
 
-        return $this->redirector->root("User/Profile");
-    }
 
-    /**
-     * revoke email updates
-     *
-     * You must be logged in with your current email
-     */
-    public function revokeEmail(){
+        if (
+            !filter_var(
+                $email,
+                FILTER_VALIDATE_EMAIL
+            )
+        ) {
 
-        $userId  = $this->request->query("id");
-        $userId  = empty($userId)? null: Encryption::decryptId($this->request->query("id"));
-        $token   = $this->request->query("token");
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_email_invalid'
+            );
 
-        $result = $this->user->revokeEmail($userId, $token);
-
-        if(!$result){
-            return $this->error(404);
-        }else{
-            $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'user/profile.php', ["emailUpdates" => ["success" => "Your email updates has been revoked successfully."]]);
+            exit;
         }
-    }
 
-    /**
-     * confirm on email updates
-     *
-     * You must be logged in with your current email
-     */
-    public function updateEmail(){
 
-        $userId  = $this->request->query("id");
-        $userId  = empty($userId)? null: Encryption::decryptId($this->request->query("id"));
-        $token   = $this->request->query("token");
+        if (
+            strlen($password) < 6
+        ) {
 
-        $result = $this->user->updateEmail($userId, $token);
-        $errors = $this->user->errors();
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_password_short'
+            );
 
-        if(!$result && empty($errors)){
-            return $this->error(404);
-        }else if(!$result && !empty($errors)){
-            $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'user/profile.php', ["emailUpdates" => ["errors" => $this->user->errors()]]);
-        }else{
-            $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'user/profile.php',
-                ["emailUpdates" => ["success" => "Your email updates has been updated successfully."]]);
+            exit;
         }
-    }
 
-    /**
-     * users can report bugs, features, or enhancement
-     * - Bug is an error you encountered
-     * - Feature is a new functionality you suggest to add
-     * - Enhancement is an existing feature, but you want to improve
-     *
-     */
-    public function bugs(){
-        Config::setJsConfig('curPage', "bugs");
-        $this->view->renderWithLayouts(Config::get('VIEWS_PATH') . "layout/default/", Config::get('VIEWS_PATH') . 'bugs/index.php');
-    }
 
-    /**
-     * send email to admin for reporting any bugs, features, or enhancement
-     *
-     */
-    public function reportBug(){
-
-        $subject = $this->request->data("subject");
-        $label   = $this->request->data("label");
-        $message = $this->request->data("message");
-
-        $result = $this->user->reportBug(Session::getUserId(), $subject, $label, $message);
-
-        if(!$result){
-            Session::set('report-bug-errors', $this->user->errors());
-        }else{
-            Session::set('report-bug-success', "Email has been sent successfully, We will consider your report.");
+        if (
+            $role !== 'admin' &&
+            $role !== 'user'
+        ) {
+            $role = 'user';
         }
-        
-        return $this->redirector->root("User/Bugs");
+
+
+        if (
+            $this->user
+                ->emailExists($email)
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_email_exists'
+            );
+
+            exit;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CREATE USER
+        |--------------------------------------------------------------------------
+        */
+
+        $this->user->create([
+            'name' =>
+                $name,
+
+            'email' =>
+                $email,
+
+            'password' =>
+                $password,
+
+            'role' =>
+                $role
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NOTIFICATION
+        |--------------------------------------------------------------------------
+        */
+
+        $this->notification->create([
+            'category' =>
+                'system',
+
+            'action' =>
+                'user_created',
+
+            'title' =>
+                'Pengguna Baru Didaftarkan',
+
+            'message' =>
+                $name .
+                ' telah didaftarkan sebagai ' .
+                (
+                    $role === 'admin'
+                    ? 'Pentadbir.'
+                    : 'Pengguna Biasa.'
+                ),
+
+            'entity_type' =>
+                'user',
+
+            'entity_id' =>
+                null
+        ]);
+
+
+        header(
+            'Location: /cajpemajuan/dashboard?success=user_created'
+        );
+
+        exit;
     }
 
-    public function isAuthorized(){
-        return true;
+
+    public function update($id)
+    {
+        if (
+            $_SERVER['REQUEST_METHOD']
+            !==
+            'POST'
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard'
+            );
+
+            exit;
+        }
+
+
+        $existingUser =
+            $this->user->getById($id);
+
+
+        if (!$existingUser) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_not_found'
+            );
+
+            exit;
+        }
+
+
+        $name =
+            isset($_POST['name'])
+            ? trim($_POST['name'])
+            : '';
+
+
+        $email =
+            isset($_POST['email'])
+            ? trim($_POST['email'])
+            : '';
+
+
+        $password =
+            isset($_POST['password'])
+            ? $_POST['password']
+            : '';
+
+
+        $role =
+            isset($_POST['role'])
+            ? $_POST['role']
+            : 'user';
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | VALIDATION
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            empty($name) ||
+            empty($email)
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_required'
+            );
+
+            exit;
+        }
+
+
+        if (
+            !filter_var(
+                $email,
+                FILTER_VALIDATE_EMAIL
+            )
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_email_invalid'
+            );
+
+            exit;
+        }
+
+
+        if (
+            !empty($password) &&
+            strlen($password) < 6
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_password_short'
+            );
+
+            exit;
+        }
+
+
+        if (
+            $this->user
+                ->emailExistsExcept(
+                    $email,
+                    $id
+                )
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_email_exists'
+            );
+
+            exit;
+        }
+
+
+        if (
+            $role !== 'admin' &&
+            $role !== 'user'
+        ) {
+            $role = 'user';
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PREVENT CURRENT ADMIN REMOVING OWN ADMIN ROLE
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $id ===
+            (int) $_SESSION['user_id']
+        ) {
+            $role =
+                $existingUser['role'];
+        }
+
+
+        $this->user->updateUser(
+            $id,
+            [
+                'name' =>
+                    $name,
+
+                'email' =>
+                    $email,
+
+                'password' =>
+                    $password,
+
+                'role' =>
+                    $role
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE CURRENT SESSION DETAILS
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $id ===
+            (int) $_SESSION['user_id']
+        ) {
+
+            $_SESSION['user_name'] =
+                $name;
+
+            $_SESSION['user_email'] =
+                $email;
+        }
+
+
+        $this->notification->create([
+            'category' =>
+                'system',
+
+            'action' =>
+                'user_updated',
+
+            'title' =>
+                'Maklumat Pengguna Dikemaskini',
+
+            'message' =>
+                $name .
+                ' telah dikemaskini.',
+
+            'entity_type' =>
+                'user',
+
+            'entity_id' =>
+                $id
+        ]);
+
+
+        header(
+            'Location: /cajpemajuan/dashboard?success=user_updated'
+        );
+
+        exit;
+    }
+
+
+    public function delete($id)
+    {
+        if (
+            $_SERVER['REQUEST_METHOD']
+            !==
+            'POST'
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard'
+            );
+
+            exit;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CANNOT DELETE YOURSELF
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            (int) $id ===
+            (int) $_SESSION['user_id']
+        ) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=cannot_delete_self'
+            );
+
+            exit;
+        }
+
+
+        $user =
+            $this->user->getById($id);
+
+
+        if (!$user) {
+
+            header(
+                'Location: /cajpemajuan/dashboard?error=user_not_found'
+            );
+
+            exit;
+        }
+
+
+        $this->notification->create([
+            'category' =>
+                'system',
+
+            'action' =>
+                'user_deleted',
+
+            'title' =>
+                'Pengguna Dipadam',
+
+            'message' =>
+                $user['name'] .
+                ' telah dipadam daripada sistem.',
+
+            'entity_type' =>
+                'user',
+
+            'entity_id' =>
+                $id
+        ]);
+
+
+        $this->user
+            ->deleteUser($id);
+
+
+        header(
+            'Location: /cajpemajuan/dashboard?success=user_deleted'
+        );
+
+        exit;
     }
 }

@@ -1,1 +1,21 @@
-vendor/
+.DS_Store
+
+# Logs
+app/logs/*
+!app/logs/.gitkeep
+
+# Uploaded receipts
+public/uploads/receipts/*
+!public/uploads/receipts/.gitkeep
+
+# Local/private config
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# Backups
+*.bak
+*.backup
+*.old

@@ -23,5 +23,13 @@
     },
     "autoload": {
     	"psr-4": { "": ["app/core/", "app/models/", "app/utility/", "app/controllers/", "app/core/components/"] }
+    },
+    "config": {
+        "audit": {
+            "block-insecure": false
+        },
+        "platform": {
+            "php": "7.4.33"
+        }
     }
 }
