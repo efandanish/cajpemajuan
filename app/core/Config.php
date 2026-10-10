@@ -84,7 +84,17 @@ class Config{
                 throw new Exception("Configuration file " . $source . " doesn't exist");
             }
 
-            self::$config[$source] = require $config_file . "";
+            self::$config[$source] = require $config_file;
+            if ($source === self::$prefix['default']) {
+                $localFile = APP . 'config/local.php';
+                if (is_file($localFile)) {
+                    $local = require $localFile;
+                    if (!is_array($local)) {
+                        throw new RuntimeException('app/config/local.php must return an array.');
+                    }
+                    self::$config[$source] = array_replace(self::$config[$source], $local);
+                }
+            }
         }
 
         if(empty($key)){

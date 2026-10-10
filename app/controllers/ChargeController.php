@@ -13,7 +13,7 @@ class ChargeController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=unauthorized'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=unauthorized'
             );
 
             exit;
@@ -24,7 +24,7 @@ class ChargeController extends Controller
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -36,7 +36,7 @@ class ChargeController extends Controller
         if (!$charge) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
             );
 
             exit;
@@ -68,7 +68,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=charge_deleted'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_deleted'
         );
 
         exit;
@@ -78,7 +78,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -93,7 +93,7 @@ class ChargeController extends Controller
         if (!$oldCharge) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
             );
 
             exit;
@@ -361,7 +361,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=charge_updated'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_updated'
         );
 
         exit;
@@ -370,7 +370,7 @@ class ChargeController extends Controller
     public function create()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -384,7 +384,7 @@ class ChargeController extends Controller
         if (!$chargeId) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=charge_create_failed'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_create_failed'
             );
 
             exit;
@@ -469,7 +469,7 @@ class ChargeController extends Controller
                 null
         ]);
 
-        header('Location: /cajpemajuan/dashboard?success=charge_added');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_added');
         exit;
     }
 
@@ -528,7 +528,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -545,7 +545,7 @@ class ChargeController extends Controller
         if (!$payment) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=payment_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=payment_not_found'
             );
 
             exit;
@@ -561,7 +561,7 @@ class ChargeController extends Controller
         if (empty($paymentDate)) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=invalid_payment'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_payment'
             );
 
             exit;
@@ -595,7 +595,7 @@ class ChargeController extends Controller
             if ($file['size'] > 5 * 1024 * 1024) {
 
                 header(
-                    'Location: /cajpemajuan/dashboard?error=receipt_too_large'
+                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=receipt_too_large'
                 );
 
                 exit;
@@ -634,7 +634,7 @@ class ChargeController extends Controller
             ) {
 
                 header(
-                    'Location: /cajpemajuan/dashboard?error=invalid_receipt'
+                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_receipt'
                 );
 
                 exit;
@@ -690,7 +690,7 @@ class ChargeController extends Controller
             ) {
 
                 header(
-                    'Location: /cajpemajuan/dashboard?error=receipt_upload_failed'
+                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=receipt_upload_failed'
                 );
 
                 exit;
@@ -738,7 +738,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=charge_payment_recorded'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_payment_recorded'
         );
 
         exit;
@@ -749,7 +749,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -766,7 +766,7 @@ class ChargeController extends Controller
         if (!$payment) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=payment_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=payment_not_found'
             );
 
             exit;
@@ -833,7 +833,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=charge_payment_cancelled'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_payment_cancelled'
         );
 
         exit;
@@ -843,7 +843,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -860,7 +860,7 @@ class ChargeController extends Controller
         if (!$charge) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
             );
 
             exit;
@@ -877,7 +877,7 @@ class ChargeController extends Controller
         if (!empty($existingPayments)) {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -957,7 +957,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=charge_schedule_generated'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_schedule_generated'
         );
 
         exit;

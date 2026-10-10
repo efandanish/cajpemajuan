@@ -26,9 +26,8 @@ class Handler{
      */
     public static function register(){
 
-        // turn off all error reporting as well,
-        // because we will take care of it
-        error_reporting(0);
+        error_reporting(E_ALL);
+        ini_set('display_errors', '0');
 
         set_error_handler(__CLASS__ . "::handleError");
         set_exception_handler(__CLASS__ .'::handleException');
@@ -63,7 +62,10 @@ class Handler{
      * @return void
      * @throws ErrorException
      */
-    public static function handleError($errno, $errmsg, $filename, $linenum, $vars){
+    public static function handleError($errno, $errmsg, $filename, $linenum, $vars = null){
+        if (!(error_reporting() & $errno)) {
+            return false;
+        }
         throw new ErrorException($errmsg, 0, $errno, $filename, $linenum);
     }
 
@@ -75,8 +77,20 @@ class Handler{
      * @see http://php.net/manual/en/function.set-exception-handler.php
      */
     public static function handleException($e) {
-        Logger::Log(get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
-        self::render($e)->send();
+        $details = get_class($e) . ': ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine();
+        // Logging must never prevent the error page from appearing.
+        @error_log($details);
+        try {
+            Logger::log(get_class($e), $e->getMessage(), $e->getFile(), $e->getLine());
+        } catch (Throwable $loggingError) {
+            @error_log('Application log unavailable: ' . $loggingError->getMessage());
+        }
+        try {
+            self::render($e)->send();
+        } catch (Throwable $renderError) {
+            @error_log('Error page unavailable: ' . $renderError->getMessage());
+            Startup::failure('The system could not render this page. Check the PHP error log for the cause and verify that the project files and configuration are complete.');
+        }
     }
 
     /**

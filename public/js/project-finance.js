@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         form.method = 'POST';
 
                         form.action =
-                            '/cajpemajuan/project/recordPayment/' +
+                            window.APP_ROOT + 'project/recordPayment/' +
                             scheduleId;
 
 
@@ -244,7 +244,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action =
-                    '/cajpemajuan/project/cancelPayment/' + expenseId;
+                    window.APP_ROOT + 'project/cancelPayment/' + expenseId;
 
                 document.body.appendChild(form);
                 form.submit();
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.method = 'POST';
 
                 form.action =
-                    '/cajpemajuan/project/addScheduleRecord/' +
+                    window.APP_ROOT + 'project/addScheduleRecord/' +
                     projectId;
 
                 const values = {
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.method = 'POST';
 
                 form.action =
-                    '/cajpemajuan/project/addManualExpense/' +
+                    window.APP_ROOT + 'project/addManualExpense/' +
                     projectId;
 
 
@@ -707,7 +707,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.method = 'POST';
 
                 form.action =
-                    '/cajpemajuan/project/addVariationRecord/' +
+                    window.APP_ROOT + 'project/addVariationRecord/' +
                     projectId;
 
                 const values = {
@@ -776,7 +776,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 form.method = 'POST';
 
                 form.action =
-                    '/cajpemajuan/project/deleteScheduleRecord/' +
+                    window.APP_ROOT + 'project/deleteScheduleRecord/' +
                     scheduleId;
 
                 document.body.appendChild(form);

@@ -121,7 +121,7 @@
                                             <hr>
 
 
-                                            <form method="POST" action="/cajpemajuan/charge/payment/<?= $payment['id'] ?>"
+                                            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/payment/<?= $payment['id'] ?>"
                                                 enctype="multipart/form-data">
 
                                                 <div class="row g-3">
@@ -202,7 +202,6 @@
 
                                                         <a href="<?=
                                                             PUBLIC_ROOT .
-                                                            '/' .
                                                             htmlspecialchars(
                                                                 $payment['receipt_file']
                                                             )
@@ -213,7 +212,7 @@
                                                     <?php endif; ?>
 
 
-                                                    <form method="POST" action="/cajpemajuan/charge/cancelPayment/<?= $payment['id'] ?>"
+                                                    <form method="POST" action="<?= PUBLIC_ROOT ?>charge/cancelPayment/<?= $payment['id'] ?>"
                                                         class="cancel-charge-payment-form">
 
                                                         <button type="submit" class="btn btn-sm btn-outline-danger">
@@ -244,7 +243,7 @@
                             </div>
 
 
-                            <form method="POST" action="/cajpemajuan/charge/generatePaymentSchedule/<?= $charge['id'] ?>">
+                            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/generatePaymentSchedule/<?= $charge['id'] ?>">
 
                                 <button type="submit" class="btn btn-outline-primary">
                                     Jana Jadual Bayaran

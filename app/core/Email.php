@@ -32,7 +32,7 @@
       */
      public static function sendEmail($type, $email, $userData, $data){
 
-         $mail             = new PHPMailer();
+         $mail             = new \PHPMailer\PHPMailer\PHPMailer();
          $mail->IsSMTP();
 
          // good for debugging, otherwise keep it commented

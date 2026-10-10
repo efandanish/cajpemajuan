@@ -27,7 +27,7 @@ class UserController extends Controller
         if (empty($_SESSION['user_id'])) {
 
             header(
-                'Location: /cajpemajuan/auth'
+                'Location: ' . PUBLIC_ROOT . 'auth'
             );
 
             exit;
@@ -46,7 +46,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=unauthorized'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=unauthorized'
             );
 
             exit;
@@ -63,7 +63,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -107,7 +107,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_required'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_required'
             );
 
             exit;
@@ -122,7 +122,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_email_invalid'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_invalid'
             );
 
             exit;
@@ -134,7 +134,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_password_short'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_password_short'
             );
 
             exit;
@@ -155,7 +155,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_email_exists'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_exists'
             );
 
             exit;
@@ -217,7 +217,7 @@ class UserController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=user_created'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_created'
         );
 
         exit;
@@ -233,7 +233,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -247,7 +247,7 @@ class UserController extends Controller
         if (!$existingUser) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_not_found'
             );
 
             exit;
@@ -290,7 +290,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_required'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_required'
             );
 
             exit;
@@ -305,7 +305,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_email_invalid'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_invalid'
             );
 
             exit;
@@ -318,7 +318,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_password_short'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_password_short'
             );
 
             exit;
@@ -334,7 +334,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_email_exists'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_exists'
             );
 
             exit;
@@ -424,7 +424,7 @@ class UserController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=user_updated'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_updated'
         );
 
         exit;
@@ -440,7 +440,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -459,7 +459,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=cannot_delete_self'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=cannot_delete_self'
             );
 
             exit;
@@ -473,7 +473,7 @@ class UserController extends Controller
         if (!$user) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=user_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_not_found'
             );
 
             exit;
@@ -507,7 +507,7 @@ class UserController extends Controller
 
 
         header(
-            'Location: /cajpemajuan/dashboard?success=user_deleted'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_deleted'
         );
 
         exit;

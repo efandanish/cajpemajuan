@@ -13,14 +13,14 @@
 
     <div class="d-flex align-items-center gap-2">
 
-        <form method="POST" action="/cajpemajuan/notify/markAllRead" class="m-0">
+        <form method="POST" action="<?= PUBLIC_ROOT ?>notify/markAllRead" class="m-0">
             <button type="submit" class="btn btn-outline-primary">
                 Tanda Semua Dibaca
             </button>
         </form>
 
 
-        <form method="POST" action="/cajpemajuan/notify/clearAll" class="clear-notifications-form m-0">
+        <form method="POST" action="<?= PUBLIC_ROOT ?>notify/clearAll" class="clear-notifications-form m-0">
             <button type="submit" class="btn btn-outline-danger notification-trash-btn" title="Kosongkan Notifikasi"
                 aria-label="Kosongkan Notifikasi">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"

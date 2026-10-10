@@ -15,7 +15,7 @@ class ReportController extends Controller
 
         if (empty($_SESSION['user_id'])) {
             header(
-                'Location: /cajpemajuan/auth'
+                'Location: ' . PUBLIC_ROOT . 'auth'
             );
 
             exit;

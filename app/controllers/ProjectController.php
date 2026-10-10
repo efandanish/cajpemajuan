@@ -14,7 +14,7 @@ class ProjectController extends Controller
         ) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=unauthorized'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=unauthorized'
             );
 
             exit;
@@ -25,7 +25,7 @@ class ProjectController extends Controller
     public function create()
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -34,7 +34,7 @@ class ProjectController extends Controller
         $projectId = $this->project->create($data);
 
         if (!$projectId) {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -58,7 +58,7 @@ class ProjectController extends Controller
             'entity_id' => $projectId
         ]);
 
-        header('Location: /cajpemajuan/dashboard');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard');
         exit;
     }
 
@@ -68,7 +68,7 @@ class ProjectController extends Controller
         $project = $this->project->getById($id);
 
         if (!$project) {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -88,7 +88,7 @@ class ProjectController extends Controller
     public function update($id)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -99,7 +99,7 @@ class ProjectController extends Controller
         if (!$oldProject) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=project_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found'
             );
 
             exit;
@@ -259,7 +259,7 @@ class ProjectController extends Controller
         }
 
         header(
-            'Location: /cajpemajuan/dashboard?success=project_updated'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=project_updated'
         );
 
         exit;
@@ -269,14 +269,14 @@ class ProjectController extends Controller
     public function delete($id)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
         $project = $this->project->getById($id);
 
         if (!$project) {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -300,7 +300,7 @@ class ProjectController extends Controller
             'entity_id' => $id
         ]);
 
-        header('Location: /cajpemajuan/dashboard');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard');
         exit;
     }
 
@@ -405,7 +405,7 @@ class ProjectController extends Controller
     public function recordPayment($scheduleId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -414,7 +414,7 @@ class ProjectController extends Controller
 
         if (!$schedule) {
             header(
-                'Location: /cajpemajuan/dashboard?error=schedule_not_found'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_not_found'
             );
             exit;
         }
@@ -434,7 +434,7 @@ class ProjectController extends Controller
         if ($amount <= 0 || empty($paymentDate)) {
 
             header(
-                'Location: /cajpemajuan/dashboard?error=invalid_payment'
+                'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_payment'
             );
 
             exit;
@@ -453,7 +453,7 @@ class ProjectController extends Controller
         );
 
         header(
-            'Location: /cajpemajuan/dashboard?success=payment_recorded'
+            'Location: ' . PUBLIC_ROOT . 'dashboard?success=payment_recorded'
         );
 
         exit;
@@ -463,7 +463,7 @@ class ProjectController extends Controller
         $expense = $this->project->getExpenseById($expenseId);
 
         if (!$expense) {
-            header('Location: /cajpemajuan/dashboard?error=expense_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=expense_not_found');
             exit;
         }
 
@@ -475,21 +475,21 @@ class ProjectController extends Controller
             $this->project->markSchedulePending($scheduleId);
         }
 
-        header('Location: /cajpemajuan/dashboard?success=payment_cancelled');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=payment_cancelled');
         exit;
     }
 
     public function addScheduleRecord($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: /cajpemajuan/dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
             exit;
         }
 
@@ -506,7 +506,7 @@ class ProjectController extends Controller
             : 'Ansuran';
 
         if (empty($date) || $amount <= 0) {
-            header('Location: /cajpemajuan/dashboard?error=invalid_schedule');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_schedule');
             exit;
         }
 
@@ -517,20 +517,20 @@ class ProjectController extends Controller
             $type
         );
 
-        header('Location: /cajpemajuan/dashboard?success=schedule_added');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=schedule_added');
         exit;
     }
     public function addManualExpense($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: /cajpemajuan/dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
             exit;
         }
 
@@ -547,7 +547,7 @@ class ProjectController extends Controller
             : '';
 
         if ($amount <= 0 || empty($paymentDate)) {
-            header('Location: /cajpemajuan/dashboard?error=invalid_expense');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_expense');
             exit;
         }
 
@@ -559,21 +559,21 @@ class ProjectController extends Controller
             $description
         );
 
-        header('Location: /cajpemajuan/dashboard?success=manual_expense_added');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=manual_expense_added');
         exit;
     }
 
     public function addVariationRecord($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: /cajpemajuan/dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
             exit;
         }
 
@@ -598,7 +598,7 @@ class ProjectController extends Controller
             $amount <= 0 ||
             empty($date)
         ) {
-            header('Location: /cajpemajuan/dashboard?error=invalid_variation');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_variation');
             exit;
         }
 
@@ -610,14 +610,14 @@ class ProjectController extends Controller
             $date
         );
 
-        header('Location: /cajpemajuan/dashboard?success=variation_added');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=variation_added');
         exit;
     }
 
     public function deleteScheduleRecord($scheduleId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: /cajpemajuan/dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard');
             exit;
         }
 
@@ -625,18 +625,18 @@ class ProjectController extends Controller
             $this->project->getScheduleById($scheduleId);
 
         if (!$schedule) {
-            header('Location: /cajpemajuan/dashboard?error=schedule_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_not_found');
             exit;
         }
 
         if ($schedule['status'] === 'Dibayar') {
-            header('Location: /cajpemajuan/dashboard?error=schedule_paid');
+            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_paid');
             exit;
         }
 
         $this->project->deleteSchedule($scheduleId);
 
-        header('Location: /cajpemajuan/dashboard?success=schedule_deleted');
+        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=schedule_deleted');
         exit;
     }
 }

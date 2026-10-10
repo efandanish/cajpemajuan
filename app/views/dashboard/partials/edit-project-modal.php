@@ -109,7 +109,7 @@
                     </div>
 
 
-                    <form method="POST" action="/cajpemajuan/project/update/<?= $project['id'] ?>" class="edit-project-form">
+                    <form method="POST" action="<?= PUBLIC_ROOT ?>project/update/<?= $project['id'] ?>" class="edit-project-form">
 
                         <div class="modal-body">
 

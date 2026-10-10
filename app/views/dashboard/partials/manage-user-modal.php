@@ -112,7 +112,7 @@
                                                     (int) $_SESSION['user_id']
                                                 ): ?>
 
-                                                    <form method="POST" action="/cajpemajuan/user/delete/<?= $user['id'] ?>"
+                                                    <form method="POST" action="<?= PUBLIC_ROOT ?>user/delete/<?= $user['id'] ?>"
                                                         class="delete-user-form d-inline">
 
                                                         <button type="submit" class="btn btn-sm btn-outline-danger">

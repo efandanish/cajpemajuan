@@ -14,7 +14,7 @@ class NotifyController extends Controller
         if (empty($_SESSION['user_id'])) {
 
             header(
-                'Location: /cajpemajuan/auth'
+                'Location: ' . PUBLIC_ROOT . 'auth'
             );
 
             exit;
@@ -53,7 +53,7 @@ class NotifyController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/dashboard'
+                'Location: ' . PUBLIC_ROOT . 'dashboard'
             );
 
             exit;
@@ -68,7 +68,7 @@ class NotifyController extends Controller
         );
 
         header(
-            'Location: /cajpemajuan/dashboard'
+            'Location: ' . PUBLIC_ROOT . 'dashboard'
         );
 
         exit;
@@ -80,7 +80,7 @@ class NotifyController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/notify'
+                'Location: ' . PUBLIC_ROOT . 'notify'
             );
 
             exit;
@@ -94,7 +94,7 @@ class NotifyController extends Controller
         );
 
         header(
-            'Location: /cajpemajuan/dashboard'
+            'Location: ' . PUBLIC_ROOT . 'dashboard'
         );
 
         exit;
@@ -106,7 +106,7 @@ class NotifyController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: /cajpemajuan/notify'
+                'Location: ' . PUBLIC_ROOT . 'notify'
             );
 
             exit;
@@ -115,7 +115,7 @@ class NotifyController extends Controller
         $this->notification->clearAll();
 
         header(
-            'Location: /cajpemajuan/notify?success=notifications_cleared'
+            'Location: ' . PUBLIC_ROOT . 'notify?success=notifications_cleared'
         );
 
         exit;

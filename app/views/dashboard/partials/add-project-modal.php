@@ -3,7 +3,7 @@
 
         <div class="modal-content">
 
-            <form method="POST" action="/cajpemajuan/project/create" id="addProjectForm">
+            <form method="POST" action="<?= PUBLIC_ROOT ?>project/create" id="addProjectForm">
 
                 <div class="modal-header">
 

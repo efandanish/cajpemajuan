@@ -1,86 +1,36 @@
 <?php
+// Keep diagnostics available even when Composer or an application class is missing.
+define('BASE_DIR', str_replace('\\', '/', dirname(__DIR__)));
+define('APP', BASE_DIR . '/app/');
+define('IMAGES', str_replace('\\', '/', __DIR__) . '/img/');
 date_default_timezone_set('Asia/Kuala_Lumpur');
-
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
 
+$startupFile = APP . 'core/Startup.php';
+if (!is_readable($startupFile)) {
+    http_response_code(500);
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo 'System setup required: app/core/Startup.php is missing. Restore the complete project files.';
+    exit(1);
+}
+require $startupFile;
+Startup::check(BASE_DIR);
 
-/*
-|--------------------------------------------------------------------------
-| Autoload
-|--------------------------------------------------------------------------
-|
-| After running "composer install", we can use the autoloader file created.
-|
-*/
-
-require '../vendor/autoload.php';
-
-/*
-|--------------------------------------------------------------------------
-| Define Application Configuration Constants
-|--------------------------------------------------------------------------
-| 
-| PUBLIC_ROOT: 	the root URL for the application (see below).
-| BASE_DIR: 	path to the directory that has all of your "app", "public", "vendor", ... directories.
-| IMAGES:		path to upload images, don't use it for displaying images, use Config::get('root') . "/img/" instead.
-| APP:			path to app directory.
-|
-*/
-
-// Config::set('base', str_replace("\\", "/", dirname(__DIR__)));
-// Config::set('images', str_replace("\\", "/", __DIR__) . "/img/");
-// Config::set('app', Config::get('base') . "/app/");
-
-define('BASE_DIR', str_replace("\\", "/", dirname(__DIR__)));
-define('IMAGES', str_replace("\\", "/", __DIR__) . "/img/");
-define('APP', BASE_DIR . "/app/");
-
-/*
-|--------------------------------------------------------------------------
-| Register Error & Exception handlers
-|--------------------------------------------------------------------------
-|
-| Here we will register the methods that will fire whenever there is an error
-| or an exception has been thrown.
-|
-*/
-
-Handler::register();
-
-/*
-|--------------------------------------------------------------------------
-| Start Session
-|--------------------------------------------------------------------------
-|
-*/
-
-Session::init();
-
-/*
-|--------------------------------------------------------------------------
-| Create The Application
-|--------------------------------------------------------------------------
-|
-| Here we will create the application instance which will take care of routing 
-| the incoming request to the corresponding controller and action method if valid
-|
-*/
-
-$app = new App();
-
-// Config::set('root', $app->request->root());
-define('PUBLIC_ROOT', $app->request->root());
-
-/*
-|--------------------------------------------------------------------------
-| Run The Application
-|--------------------------------------------------------------------------
-| 
-| Once we have the application instance, we can handle the incoming request
-| and send a response back to the client's browser.
-|
-*/
-
-$app->run();
+try {
+    require BASE_DIR . '/vendor/autoload.php';
+    Handler::register();
+    $app = new App();
+    define('PUBLIC_ROOT', $app->request->root());
+    Session::init();
+    $app->run();
+} catch (Throwable $e) {
+    // This also catches failures before the normal exception handler is registered.
+    if (class_exists('Handler', false)) {
+        Handler::handleException($e);
+    } else {
+        @error_log(get_class($e) . ': ' . $e->getMessage());
+        Startup::failure('Application startup failed. Run composer install and check the web server PHP error log.');
+    }
+}

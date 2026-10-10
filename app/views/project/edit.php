@@ -10,7 +10,7 @@
 
         <form
             method="POST"
-            action="/cajpemajuan/project/update/<?= $project['id'] ?>"
+            action="<?= PUBLIC_ROOT ?>project/update/<?= $project['id'] ?>"
         >
 
             <h6 class="fw-bold">
@@ -466,7 +466,7 @@
             <div class="d-flex justify-content-end gap-2 mt-4">
 
                 <a
-                    href="/cajpemajuan/dashboard"
+                    href="<?= PUBLIC_ROOT ?>dashboard"
                     class="btn btn-secondary"
                 >
                     Batal

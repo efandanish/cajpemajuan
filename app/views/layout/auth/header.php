@@ -14,7 +14,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="/cajpemajuan/public/css/login.css">
+    <link rel="stylesheet" href="<?= PUBLIC_ROOT ?>css/login.css">
 
 </head>
 

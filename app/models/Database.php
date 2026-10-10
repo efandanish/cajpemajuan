@@ -372,16 +372,10 @@ class Database {
      *
      */
     private static function getPDOType($value){
-        switch ($value) {
-            case is_int($value):
-                return PDO::PARAM_INT;
-            case is_bool($value):
-                return PDO::PARAM_BOOL;
-            case is_null($value):
-                return PDO::PARAM_NULL;
-            default:
-                return PDO::PARAM_STR;
-        }
+        if (is_int($value)) { return PDO::PARAM_INT; }
+        if (is_bool($value)) { return PDO::PARAM_BOOL; }
+        if (is_null($value)) { return PDO::PARAM_NULL; }
+        return PDO::PARAM_STR;
     }
 
     /**

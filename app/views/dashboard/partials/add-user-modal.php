@@ -4,7 +4,7 @@
 
         <div class="modal-content">
 
-            <form method="POST" action="/cajpemajuan/user/create" id="addUserForm">
+            <form method="POST" action="<?= PUBLIC_ROOT ?>user/create" id="addUserForm">
 
                 <div class="modal-header">
 

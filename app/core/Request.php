@@ -213,7 +213,7 @@ class Request{
 
         if (!$host = Environment::get('HTTP_HOST')) {
             if (!$host = $this->name()) {
-                $host = Enviroment::get('SERVER_ADDR');
+                $host = Environment::get('SERVER_ADDR');
             }
         }
 
@@ -295,7 +295,16 @@ class Request{
      * @return string The protocol and the host
      */
     public function getProtocolAndHost(){
-        return $this->protocol() . '://' . $this->host();
+        $authority = $this->host();
+        $httpHost = Environment::get('HTTP_HOST');
+        if (is_string($httpHost) && preg_match('/:(\d+)$/', trim($httpHost), $matches)) {
+            $port = (int)$matches[1];
+            if ($port < 1 || $port > 65535) {
+                throw new UnexpectedValueException('Invalid HTTP host port');
+            }
+            $authority .= ':' . $port;
+        }
+        return $this->protocol() . '://' . $authority;
     }
 
     /**
@@ -346,8 +355,10 @@ class Request{
      * @return string
      */
     public function getBaseUrl(){
-        $baseUrl = str_replace(['public', '\\'], ['', '/'], dirname(Environment::get('SCRIPT_NAME')));
-        return $baseUrl;
+        // Only remove the final public directory, preserving names such as public-office.
+        $baseUrl = str_replace('\\', '/', dirname(Environment::get('SCRIPT_NAME')));
+        $baseUrl = preg_replace('#/public$#', '', rtrim($baseUrl, '/'));
+        return rtrim($baseUrl, '/') . '/';
     }
 
     /**

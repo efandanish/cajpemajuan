@@ -4,7 +4,7 @@
 
         <div class="modal-content">
 
-            <form method="POST" action="/cajpemajuan/charge/create" id="addChargeForm">
+            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/create" id="addChargeForm">
 
                 <div class="modal-header">
 

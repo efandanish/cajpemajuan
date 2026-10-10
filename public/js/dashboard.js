@@ -1414,7 +1414,7 @@ if (printChargeReport) {
 
 
             const url =
-                '/cajpemajuan/report/charges' +
+                window.APP_ROOT + 'report/charges' +
                 '?year=' +
                 encodeURIComponent(year) +
                 '&status=' +
@@ -1500,7 +1500,7 @@ if (printProjectReport) {
 
 
             const url =
-                '/cajpemajuan/report/projects' +
+                window.APP_ROOT + 'report/projects' +
                 '?year=' +
                 encodeURIComponent(year) +
                 '&department=' +

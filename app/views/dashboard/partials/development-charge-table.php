@@ -222,7 +222,7 @@
                                             </button>
 
 
-                                            <form method="POST" action="/cajpemajuan/charge/delete/<?= $charge['id'] ?>"
+                                            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/delete/<?= $charge['id'] ?>"
                                                 class="delete-charge-form d-inline">
 
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">

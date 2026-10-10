@@ -1,0 +1,65 @@
+name: PHP 8.0 compatibility and fresh installation
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  installation:
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        php: ['8.0']
+    services:
+      database:
+        image: mariadb:10.4
+        env:
+          MYSQL_ROOT_PASSWORD: test-password
+          MYSQL_DATABASE: cajpemajuan_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -ptest-password"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: pdo_mysql, mbstring, gd, openssl, fileinfo
+          coverage: none
+          tools: composer:v2
+      - name: Install dependencies from scratch
+        run: |
+          rm -rf vendor
+          composer install --no-dev --prefer-dist --no-interaction
+          composer check-platform-reqs --no-dev
+      - name: Check PHP syntax
+        run: find app public scripts tests vendor -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Configure fresh test installation
+        run: |
+          php -r '$db = new PDO("mysql:host=127.0.0.1;dbname=cajpemajuan_test", "root", "test-password"); $db->exec(file_get_contents("database/schema.sql"));'
+          cat > app/config/local.php <<'PHP'
+          <?php
+          return array('DB_HOST' => '127.0.0.1', 'DB_NAME' => 'cajpemajuan_test', 'DB_USER' => 'root', 'DB_PASS' => 'test-password', 'DB_CHARSET' => 'utf8mb4');
+          PHP
+          php scripts/create-admin.php admin@example.com 'CI Administrator'
+      - name: Verify setup and application behavior
+        run: |
+          php scripts/check-setup.php
+          php tests/compatibility-smoke.php
+          php tests/startup-smoke.php
+          php tests/database-smoke.php
+      - name: Verify login page and routing
+        run: |
+          php -S 127.0.0.1:8080 -t public scripts/router.php > /tmp/cajpemajuan-http.log 2>&1 &
+          test_server_pid=$!
+          trap 'kill "$test_server_pid"' EXIT
+          curl -fsS --retry 5 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/ -o /tmp/cajpemajuan-login.html
+          php -r 'if (!str_contains(file_get_contents("/tmp/cajpemajuan-login.html"), "Selamat Datang")) { exit(1); }'
+          curl -fsS http://127.0.0.1:8080/css/login.css -o /tmp/cajpemajuan-login.css
+          test "$(curl -sS -o /tmp/cajpemajuan-404.html -w '%{http_code}' http://127.0.0.1:8080/unknown-route)" = "404"
+          test -s /tmp/cajpemajuan-404.html

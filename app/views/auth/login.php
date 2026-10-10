@@ -66,7 +66,7 @@
         <?php endif; ?>
 
 
-        <form method="POST" action="/cajpemajuan/auth/login">
+        <form method="POST" action="<?= PUBLIC_ROOT ?>auth/login">
 
             <div class="mb-3">
 

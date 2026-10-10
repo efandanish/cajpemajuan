@@ -8,7 +8,7 @@
 
                 <div class="modal-content">
 
-                    <form method="POST" action="/cajpemajuan/user/update/<?= $user['id'] ?>" class="edit-user-form">
+                    <form method="POST" action="<?= PUBLIC_ROOT ?>user/update/<?= $user['id'] ?>" class="edit-user-form">
 
                         <div class="modal-header">
 

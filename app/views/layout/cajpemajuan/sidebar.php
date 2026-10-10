@@ -31,7 +31,7 @@
 
     <nav class="sidebar-nav">
 
-        <a href="/cajpemajuan/dashboard" class="sidebar-link active">
+        <a href="<?= PUBLIC_ROOT ?>dashboard" class="sidebar-link active">
             <span class="sidebar-icon">⌂</span>
 
             <span>
@@ -104,7 +104,7 @@
 
     <div class="sidebar-footer">
 
-        <form method="POST" action="/cajpemajuan/auth/logout">
+        <form method="POST" action="<?= PUBLIC_ROOT ?>auth/logout">
 
             <button type="submit" class="sidebar-logout">
                 <span class="sidebar-icon">

@@ -96,7 +96,7 @@ class App {
             // then send to login controller, and it should take care of the request
             // either redirect to login page, or dashboard.
             $this->method = "index";
-            return $this->invoke("LoginController", $this->method, $this->args);
+            return $this->invoke("AuthController", $this->method, $this->args);
         }
     }
 

@@ -225,7 +225,7 @@
                                             $_SESSION['user_role'] === 'admin'
                                         ): ?>
 
-                                            <form method="POST" action="/cajpemajuan/project/delete/<?= $project['id'] ?>"
+                                            <form method="POST" action="<?= PUBLIC_ROOT ?>project/delete/<?= $project['id'] ?>"
                                                 class="delete-project-form d-inline">
 
                                                 <button type="submit" class="btn btn-sm btn-outline-danger">

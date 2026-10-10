@@ -19,3 +19,4 @@ public/uploads/receipts/*
 *.bak
 *.backup
 *.old
+app/config/local.php

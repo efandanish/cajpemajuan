@@ -36,7 +36,7 @@
 
                     <form
                         method="POST"
-                        action="/cajpemajuan/charge/update/<?= $charge['id'] ?>"
+                        action="<?= PUBLIC_ROOT ?>charge/update/<?= $charge['id'] ?>"
                         class="edit-charge-form"
                     >
 
