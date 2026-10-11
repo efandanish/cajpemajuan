@@ -1,3 +1,4 @@
+<?php if ($_SESSION['user_role'] === 'admin'): ?><a class="btn btn-primary mb-3" href="<?= PUBLIC_ROOT ?>project/create">+ Tambah Projek</a><?php endif; ?>
 <div class="card dashboard-table-card">
 
     <div class="card-header dashboard-table-header">
@@ -214,10 +215,10 @@
 
                                     <div class="d-flex justify-content-end gap-2">
 
-                                        <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                            data-bs-target="#editProjectModal<?= $project['id'] ?>">
-                                            Edit
-                                        </button>
+                                        <a class="btn btn-sm btn-outline-primary" href="<?= PUBLIC_ROOT ?>project/finance/<?= $project['id'] ?>">
+                                            Kewangan
+                                        </a>
+                                        <a class="btn btn-sm btn-outline-secondary" href="<?= PUBLIC_ROOT ?>project/edit/<?= $project['id'] ?>">Butiran</a>
 
 
                                         <?php if (

@@ -1,3 +1,4 @@
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>project">Kembali ke Senarai</a><a class="btn btn-outline-primary" href="<?= PUBLIC_ROOT ?>project/finance/<?= $project['id'] ?>">Pengurusan Kewangan</a></div>
 <div class="card shadow-sm">
 
     <div class="card-header bg-white">
@@ -26,7 +27,7 @@
                         ID Projek
                     </label>
 
-                    <input
+                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         type="text"
                         name="project_id"
                         class="form-control"
@@ -40,7 +41,7 @@
                         Jabatan
                     </label>
 
-                    <select
+                    <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         name="department"
                         class="form-select"
                         required
@@ -70,7 +71,7 @@
                         Nama Projek
                     </label>
 
-                    <input
+                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         type="text"
                         name="project_name"
                         class="form-control"
@@ -84,7 +85,7 @@
                         Penerangan Projek
                     </label>
 
-                    <textarea
+                    <textarea <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         name="description"
                         class="form-control"
                         rows="3"
@@ -108,7 +109,7 @@
                             Status Kelulusan
                         </label>
 
-                        <select
+                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                             name="approval_status"
                             class="form-select"
                         >
@@ -136,7 +137,7 @@
                             Bilangan Mesyuarat
                         </label>
 
-                        <input
+                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                             type="number"
                             name="meeting_count"
                             class="form-control"
@@ -150,7 +151,7 @@
                             Jenis Perolehan
                         </label>
 
-                        <select
+                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                             name="procurement_type"
                             class="form-select"
                         >
@@ -179,7 +180,7 @@
                             Nilai SST (RM)
                         </label>
 
-                        <input
+                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                             type="number"
                             name="sst_value"
                             class="form-control"
@@ -194,7 +195,7 @@
                             Nilai Kelulusan Mesyuarat (RM)
                         </label>
 
-                        <input
+                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                             type="number"
                             name="meeting_approval_value"
                             class="form-control"
@@ -223,7 +224,7 @@
                     Kaedah Pembayaran
                 </label>
 
-                <select
+                <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                     name="payment_method"
                     id="editPaymentMethod"
                     class="form-select mb-3"
@@ -252,13 +253,13 @@
                         Jadual Tuntutan / Pajakan
                     </strong>
 
-                    <button
+                    <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                         type="button"
                         class="btn btn-link btn-sm"
                         onclick="addEditScheduleRow()"
                     >
                         + Tambah Baris
-                    </button>
+                    </button><?php endif; ?>
 
                 </div>
 
@@ -277,7 +278,7 @@
                                             Tarikh Tuntutan
                                         </label>
 
-                                        <input
+                                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             type="date"
                                             name="schedule_date[]"
                                             class="form-control"
@@ -290,7 +291,7 @@
                                             Jumlah (RM)
                                         </label>
 
-                                        <input
+                                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             type="number"
                                             name="schedule_amount[]"
                                             class="form-control"
@@ -305,7 +306,7 @@
                                             Jenis
                                         </label>
 
-                                        <select
+                                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             name="schedule_type[]"
                                             class="form-select edit-schedule-type"
                                         >
@@ -321,13 +322,13 @@
                                     </div>
 
                                     <div class="col-md-1 d-flex align-items-end">
-                                        <button
+                                        <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                             type="button"
                                             class="btn btn-danger"
                                             onclick="this.closest('.schedule-row').remove()"
                                         >
                                             ×
-                                        </button>
+                                        </button><?php endif; ?>
                                     </div>
 
                                 </div>
@@ -347,7 +348,7 @@
                                         Tarikh Tuntutan
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="date"
                                         name="schedule_date[]"
                                         class="form-control"
@@ -359,7 +360,7 @@
                                         Jumlah (RM)
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="number"
                                         name="schedule_amount[]"
                                         class="form-control"
@@ -373,7 +374,7 @@
                                         Jenis
                                     </label>
 
-                                    <select
+                                    <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         name="schedule_type[]"
                                         class="form-select edit-schedule-type"
                                     >
@@ -411,7 +412,7 @@
                         Tarikh Mula
                     </label>
 
-                    <input
+                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         type="date"
                         name="start_date"
                         class="form-control"
@@ -424,7 +425,7 @@
                         Tarikh Tamat
                     </label>
 
-                    <input
+                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         type="date"
                         name="end_date"
                         class="form-control"
@@ -437,7 +438,7 @@
                         Status Semasa Projek
                     </label>
 
-                    <select
+                    <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                         name="project_status"
                         class="form-select"
                     >
@@ -466,18 +467,18 @@
             <div class="d-flex justify-content-end gap-2 mt-4">
 
                 <a
-                    href="<?= PUBLIC_ROOT ?>dashboard"
+                    href="<?= PUBLIC_ROOT ?>project"
                     class="btn btn-secondary"
                 >
                     Batal
                 </a>
 
-                <button
+                <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                     type="submit"
                     class="btn btn-primary"
                 >
                     Simpan Perubahan
-                </button>
+                </button><?php endif; ?>
 
             </div>
 
@@ -506,7 +507,7 @@ function addEditScheduleRow() {
         <div class="row g-2">
 
             <div class="col-md-4">
-                <input
+                <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                     type="date"
                     name="schedule_date[]"
                     class="form-control"
@@ -514,7 +515,7 @@ function addEditScheduleRow() {
             </div>
 
             <div class="col-md-4">
-                <input
+                <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                     type="number"
                     name="schedule_amount[]"
                     class="form-control"
@@ -524,7 +525,7 @@ function addEditScheduleRow() {
             </div>
 
             <div class="col-md-3">
-                <select
+                <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                     name="schedule_type[]"
                     class="form-select edit-schedule-type"
                 >
@@ -535,13 +536,13 @@ function addEditScheduleRow() {
             </div>
 
             <div class="col-md-1">
-                <button
+                <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                     type="button"
                     class="btn btn-danger"
                     onclick="this.closest('.schedule-row').remove()"
                 >
                     ×
-                </button>
+                </button><?php endif; ?>
             </div>
 
         </div>

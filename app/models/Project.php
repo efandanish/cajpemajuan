@@ -499,6 +499,22 @@ class Project extends Model
         return $database->execute();
     }
 
+    public function getDashboardSummaryByYear($year)
+    {
+        $database = Database::openConnection();
+        // Match getAllByYear's cohort and getTotalExpenses's recorded expenses.
+        $database->prepare("
+            SELECT COUNT(DISTINCT p.id) AS record_count,
+                COALESCE(SUM(e.amount), 0) AS expenditure_amount
+            FROM projects p
+            LEFT JOIN project_expenses e ON e.project_id = p.id
+            WHERE YEAR(p.start_date) = :year
+        ");
+        $database->bindValue(':year', (int) $year);
+        $database->execute();
+        return $database->fetchAssociative();
+    }
+
     public function getAllByYear($year)
     {
         $database = Database::openConnection();

@@ -1,30 +1,25 @@
 <?php
 
-class ChargeController extends Controller
+class ChargeController extends ModuleController
 {
     public function initialize()
     {
         $this->loadComponents([]);
         $this->loadModel('DevelopmentCharge');
         $this->loadModel('Notification');
-        if (
-            empty($_SESSION['user_role']) ||
-            $_SESSION['user_role'] !== 'admin'
-        ) {
-
-            header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=unauthorized'
-            );
-
-            exit;
+        $this->requireLogin();
+        $action = strtolower($this->request->param('action'));
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET' || !in_array($action, ['index', 'edit', 'payment'], true)) {
+            $this->requireAdmin();
         }
+
     }
 
     public function delete($id)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'charge');
             exit;
         }
 
@@ -36,7 +31,7 @@ class ChargeController extends Controller
         if (!$charge) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=charge_not_found'
             );
 
             exit;
@@ -68,7 +63,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_deleted'
+            'Location: ' . PUBLIC_ROOT . 'charge?success=charge_deleted'
         );
 
         exit;
@@ -78,7 +73,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'charge'
             );
 
             exit;
@@ -93,7 +88,7 @@ class ChargeController extends Controller
         if (!$oldCharge) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=charge_not_found'
             );
 
             exit;
@@ -361,16 +356,49 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_updated'
+            'Location: ' . PUBLIC_ROOT . 'charge?success=charge_updated'
         );
 
         exit;
     }
 
+    public function index()
+    {
+        $year = isset($_GET['year']) ? (int) $_GET['year'] : 2026;
+        $charges = $this->developmentCharge->getAllByYear($year);
+        foreach ($charges as &$charge) {
+            $totalPaid = (float) $this->developmentCharge->getTotalPaid($charge['id']);
+            $charge['total_paid'] = $totalPaid;
+            $charge['payment_status'] = $totalPaid <= 0 ? 'Belum Dibayar' : ($totalPaid < (float) $charge['charge_amount'] ? 'Bayaran Sebahagian' : 'Selesai Dibayar');
+        }
+        unset($charge);
+        $this->renderModule('charge/index.php', ['developmentCharges' => $charges, 'selectedYear' => $year, 'yearModule' => 'charge']);
+    }
+
+    public function edit($id)
+    {
+        $charge = $this->developmentCharge->getById($id);
+        if (!$charge) {
+            header('Location: ' . PUBLIC_ROOT . 'charge?error=charge_not_found');
+            exit;
+        }
+        $payments = $this->developmentCharge->getPayments($id);
+        $this->renderModule('charge/edit.php', [
+            'charge' => $charge,
+            'payments' => $payments,
+            'hasPayments' => !empty($payments),
+            'hasPaidPayments' => $this->developmentCharge->hasPaidPayments($id)
+        ]);
+    }
+
     public function create()
     {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $this->renderModule('charge/create.php');
+            return;
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'charge');
             exit;
         }
 
@@ -384,7 +412,7 @@ class ChargeController extends Controller
         if (!$chargeId) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_create_failed'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=charge_create_failed'
             );
 
             exit;
@@ -466,10 +494,10 @@ class ChargeController extends Controller
                 'development_charge',
 
             'entity_id' =>
-                null
+                $chargeId
         ]);
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_added');
+        header('Location: ' . PUBLIC_ROOT . 'charge?success=charge_added');
         exit;
     }
 
@@ -525,12 +553,19 @@ class ChargeController extends Controller
 
     public function payment($paymentId)
     {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $charge = $this->developmentCharge->getById($paymentId);
+            if (!$charge) {
+                header('Location: ' . PUBLIC_ROOT . 'charge?error=charge_not_found');
+                exit;
+            }
+            $this->renderModule('charge/payment.php', [
+                'charge' => $charge, 'payments' => $this->developmentCharge->getPayments($paymentId)
+            ]);
+            return;
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-
-            header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
-            );
-
+            header('Location: ' . PUBLIC_ROOT . 'charge');
             exit;
         }
 
@@ -545,7 +580,7 @@ class ChargeController extends Controller
         if (!$payment) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=payment_not_found'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=payment_not_found'
             );
 
             exit;
@@ -561,7 +596,7 @@ class ChargeController extends Controller
         if (empty($paymentDate)) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_payment'
+                'Location: ' . PUBLIC_ROOT . 'charge/payment/' . $payment['development_charge_id'] . '?error=invalid_payment'
             );
 
             exit;
@@ -595,7 +630,7 @@ class ChargeController extends Controller
             if ($file['size'] > 5 * 1024 * 1024) {
 
                 header(
-                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=receipt_too_large'
+                    'Location: ' . PUBLIC_ROOT . 'charge?error=receipt_too_large'
                 );
 
                 exit;
@@ -634,7 +669,7 @@ class ChargeController extends Controller
             ) {
 
                 header(
-                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_receipt'
+                    'Location: ' . PUBLIC_ROOT . 'charge?error=invalid_receipt'
                 );
 
                 exit;
@@ -690,7 +725,7 @@ class ChargeController extends Controller
             ) {
 
                 header(
-                    'Location: ' . PUBLIC_ROOT . 'dashboard?error=receipt_upload_failed'
+                    'Location: ' . PUBLIC_ROOT . 'charge?error=receipt_upload_failed'
                 );
 
                 exit;
@@ -738,7 +773,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_payment_recorded'
+            'Location: ' . PUBLIC_ROOT . 'charge/payment/' . $payment['development_charge_id'] . '?success=charge_payment_recorded'
         );
 
         exit;
@@ -749,7 +784,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'charge'
             );
 
             exit;
@@ -766,7 +801,7 @@ class ChargeController extends Controller
         if (!$payment) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=payment_not_found'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=payment_not_found'
             );
 
             exit;
@@ -833,7 +868,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_payment_cancelled'
+            'Location: ' . PUBLIC_ROOT . 'charge/payment/' . $payment['development_charge_id'] . '?success=charge_payment_cancelled'
         );
 
         exit;
@@ -843,7 +878,7 @@ class ChargeController extends Controller
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'charge'
             );
 
             exit;
@@ -860,7 +895,7 @@ class ChargeController extends Controller
         if (!$charge) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=charge_not_found'
+                'Location: ' . PUBLIC_ROOT . 'charge?error=charge_not_found'
             );
 
             exit;
@@ -877,7 +912,7 @@ class ChargeController extends Controller
         if (!empty($existingPayments)) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'charge'
             );
 
             exit;
@@ -957,7 +992,7 @@ class ChargeController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=charge_schedule_generated'
+            'Location: ' . PUBLIC_ROOT . 'charge/payment/' . $charge['id'] . '?success=charge_schedule_generated'
         );
 
         exit;

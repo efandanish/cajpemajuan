@@ -1,93 +1,21 @@
-<?php if (!empty($projects)): ?>
+<a class="btn btn-outline-primary mb-3" href="<?= PUBLIC_ROOT ?>project/edit/<?= $project['id'] ?>">Edit / Butiran Projek</a>
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>project">Kembali ke Senarai</a></div>
+        <div class="module-page">
 
-    <?php foreach ($projects as $project): ?>
+            <div class="module-container">
 
-        <?php
-
-        $sstAsal =
-            (float) $project['sst_value'];
-
-        $variationTotal =
-            (float) $this->controller
-                ->project
-                ->getVariationTotal(
-                    $project['id']
-                );
-
-        $kontrakTerkini =
-            $sstAsal + $variationTotal;
-
-        $variations =
-            $this->controller
-                ->project
-                ->getVariations(
-                    $project['id']
-                );
-
-        $kontrakTerkini =
-            (float) $project['meeting_approval_value'];
-
-        if ($kontrakTerkini <= 0) {
-            $kontrakTerkini = $sstAsal;
-        }
-
-        $schedules =
-            $this->controller
-                ->project
-                ->getSchedules(
-                    $project['id']
-                );
-
-        $expenses =
-            $this->controller
-                ->project
-                ->getExpenses(
-                    $project['id']
-                );
-
-        $belanjaSebenar =
-            (float) $this->controller
-                ->project
-                ->getTotalExpenses(
-                    $project['id']
-                );
-
-        $bakiKontrak =
-            $kontrakTerkini -
-            $belanjaSebenar;
-
-        $jumlahTerjadual = 0;
-
-        if (!empty($schedules)) {
-
-            foreach ($schedules as $schedule) {
-
-                $jumlahTerjadual +=
-                    (float) $schedule['amount'];
-
-            }
-
-        }
-
-        ?>
-
-
-        <div class="modal fade project-finance-modal" id="editProjectModal<?= $project['id'] ?>" tabindex="-1" data-bs-focus="false">
-
-            <div class="modal-dialog modal-xl modal-dialog-scrollable">
-
-                <div class="modal-content">
+                <div class="card">
 
 
                     <!-- HEADER -->
 
-                    <div class="modal-header project-finance-header">
+                    <div class="card-header project-finance-header">
 
                         <div>
 
                             <div class="d-flex align-items-center gap-2 mb-1">
 
-                                <h5 class="modal-title fw-bold mb-0">
+                                <h5 class="card-title fw-bold mb-0">
                                     Urus Kewangan Projek
                                 </h5>
 
@@ -104,14 +32,14 @@
                         </div>
 
 
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
 
                     </div>
 
 
                     <form method="POST" action="<?= PUBLIC_ROOT ?>project/update/<?= $project['id'] ?>" class="edit-project-form">
 
-                        <div class="modal-body">
+                        <div class="card-body">
 
 
                             <!-- SUMMARY -->
@@ -215,7 +143,7 @@
                                             Nama Projek
                                         </label>
 
-                                        <input type="text" name="project_name" class="form-control"
+                                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="text" name="project_name" class="form-control"
                                             value="<?= htmlspecialchars($project['project_name']) ?>" required>
 
                                     </div>
@@ -227,7 +155,7 @@
                                             Status Projek
                                         </label>
 
-                                        <select name="project_status" class="form-select">
+                                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> name="project_status" class="form-select">
 
                                             <?php
                                             $statuses = [
@@ -257,7 +185,7 @@
                                             Siling Kontrak
                                         </label>
 
-                                        <input type="number" name="meeting_approval_value" class="form-control" step="0.01"
+                                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="number" name="meeting_approval_value" class="form-control" step="0.01"
                                             min="0" value="<?= $project['meeting_approval_value'] ?>">
 
                                     </div>
@@ -290,10 +218,10 @@
                                                 </div>
                                             </div>
 
-                                            <button type="button" class="btn btn-sm btn-outline-primary add-schedule-btn"
+                                            <?php if ($_SESSION['user_role'] === 'admin'): ?><button type="button" class="btn btn-sm btn-outline-primary add-schedule-btn"
                                                 data-project-id="<?= $project['id'] ?>">
                                                 + Tambah Baris
-                                            </button>
+                                            </button><?php endif; ?>
 
                                         </div>
 
@@ -316,7 +244,7 @@
 
                                                                 <?php if ($schedule['status'] !== 'Dibayar'): ?>
 
-                                                                    <button
+                                                                    <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                                                         type="button"
                                                                         class="btn btn-sm btn-primary record-payment-btn"
                                                                         data-schedule-id="<?= $schedule['id'] ?>"
@@ -324,16 +252,16 @@
                                                                         data-date="<?= $schedule['claim_date'] ?>"
                                                                     >
                                                                         Rekod Bayar
-                                                                    </button>
+                                                                    </button><?php endif; ?>
 
-                                                                    <button
+                                                                    <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                                                         type="button"
                                                                         class="btn btn-sm btn-outline-danger delete-schedule-btn btn-delete-x"
                                                                         data-schedule-id="<?= $schedule['id'] ?>"
                                                                         title="Padam Jadual"
                                                                     >
                                                                         &times;
-                                                                    </button>
+                                                                    </button><?php endif; ?>
 
                                                                 <?php endif; ?>
 
@@ -350,7 +278,7 @@
                                                                     Tarikh
                                                                 </label>
 
-                                                                <input type="date" name="schedule_date[]" class="form-control"
+                                                                <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="date" name="schedule_date[]" class="form-control"
                                                                     value="<?= htmlspecialchars($schedule['claim_date']) ?>">
 
                                                             </div>
@@ -362,7 +290,7 @@
                                                                     Jumlah
                                                                 </label>
 
-                                                                <input type="number" name="schedule_amount[]" class="form-control"
+                                                                <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="number" name="schedule_amount[]" class="form-control"
                                                                     step="0.01" min="0"
                                                                     value="<?= htmlspecialchars($schedule['amount']) ?>">
 
@@ -375,7 +303,7 @@
                                                                     Jenis
                                                                 </label>
 
-                                                                <select name="schedule_type[]" class="form-select">
+                                                                <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> name="schedule_type[]" class="form-select">
 
                                                                     <option value="One-off" <?= $schedule['type'] === 'One-off' ? 'selected' : '' ?>>
                                                                         One-off
@@ -445,12 +373,12 @@
                                                 </div>
                                             </div>
 
-                                            <button
+                                            <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                                 type="button"
                                                 class="btn btn-sm btn-outline-success manual-expense-btn"
                                                 data-project-id="<?= $project['id'] ?>">
                                                 + Rekod Manual
-                                            </button>
+                                            </button><?php endif; ?>
 
                                         </div>
 
@@ -463,10 +391,10 @@
 
                                                     <div class="expense-record position-relative">
 
-                                                        <button type="button" class="expense-delete-btn"
+                                                        <?php if ($_SESSION['user_role'] === 'admin'): ?><button type="button" class="expense-delete-btn"
                                                             data-expense-id="<?= $expense['id'] ?>" title="Batalkan Bayaran">
                                                             ×
-                                                        </button>
+                                                        </button><?php endif; ?>
 
 
                                                         <div class="mb-2">
@@ -560,12 +488,12 @@
                                         </div>
                                     </div>
 
-                                    <button
+                                    <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                         type="button"
                                         class="btn btn-sm btn-outline-primary add-variation-btn"
                                         data-project-id="<?= $project['id'] ?>">
                                         + Tambah Variasi
-                                    </button>
+                                    </button><?php endif; ?>
 
                                 </div>
 
@@ -622,33 +550,33 @@
 
                             <!-- HIDDEN FIELDS -->
 
-                            <input type="hidden" name="project_id" value="<?= htmlspecialchars($project['project_id']) ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="project_id" value="<?= htmlspecialchars($project['project_id']) ?>">
 
-                            <input type="hidden" name="department" value="<?= htmlspecialchars($project['department']) ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="department" value="<?= htmlspecialchars($project['department']) ?>">
 
-                            <input type="hidden" name="description" value="<?= htmlspecialchars($project['description']) ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="description" value="<?= htmlspecialchars($project['description']) ?>">
 
-                            <input type="hidden" name="approval_status"
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="approval_status"
                                 value="<?= htmlspecialchars($project['approval_status']) ?>">
 
-                            <input type="hidden" name="meeting_count" value="<?= (int) $project['meeting_count'] ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="meeting_count" value="<?= (int) $project['meeting_count'] ?>">
 
-                            <input type="hidden" name="procurement_type"
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="procurement_type"
                                 value="<?= htmlspecialchars($project['procurement_type']) ?>">
 
-                            <input type="hidden" name="sst_value" value="<?= $project['sst_value'] ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="sst_value" value="<?= $project['sst_value'] ?>">
 
-                            <input type="hidden" name="payment_method"
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="payment_method"
                                 value="<?= htmlspecialchars($project['payment_method']) ?>">
 
-                            <input type="hidden" name="start_date" value="<?= htmlspecialchars($project['start_date']) ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="start_date" value="<?= htmlspecialchars($project['start_date']) ?>">
 
-                            <input type="hidden" name="end_date" value="<?= htmlspecialchars($project['end_date']) ?>">
+                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?> type="hidden" name="end_date" value="<?= htmlspecialchars($project['end_date']) ?>">
 
                         </div>
 
 
-                        <div class="modal-footer">
+                        <div class="card-footer">
 
                             <button
                                 type="button"
@@ -657,13 +585,11 @@
                                 Cetak Laporan
                             </button>
 
-                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
-                                Tutup
-                            </button>
 
-                            <button type="submit" class="btn btn-primary">
+
+                            <?php if ($_SESSION['user_role'] === 'admin'): ?><button type="submit" class="btn btn-primary">
                                 Simpan Rekod
-                            </button>
+                            </button><?php endif; ?>
 
                         </div>
 
@@ -674,7 +600,3 @@
             </div>
 
         </div>
-
-    <?php endforeach; ?>
-
-<?php endif; ?>

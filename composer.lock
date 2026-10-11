@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fc0a7603720fccb220c59d22c8f96151",
+    "content-hash": "c06501d72db2e777747ef930243b0acb",
     "packages": [
         {
             "name": "gregwar/captcha",
@@ -366,7 +366,7 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0 <8.1",
+        "php": ">=7.4 <8.1",
         "ext-pdo": "*",
         "ext-pdo_mysql": "*",
         "ext-mbstring": "*",
@@ -376,7 +376,7 @@
     },
     "platform-dev": {},
     "platform-overrides": {
-        "php": "8.0.30"
+        "php": "7.4.33"
     },
     "plugin-api-version": "2.9.0"
 }

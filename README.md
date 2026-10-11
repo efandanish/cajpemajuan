@@ -4,10 +4,10 @@ A PHP MVC application for projects, development charges, payment schedules, rece
 
 ## Requirements
 
-- PHP **8.0.x only**, preferably **8.0.30**. PHP 7.x and PHP 8.1 or newer are outside this project's supported range. Composer resolves dependencies for PHP 8.0.30, and the application checks the running PHP version before loading dependencies.
+- PHP **7.4.x or 8.0.x**, with dependencies resolved for **7.4.33**. PHP 8.1 or newer is outside this project's supported range. Composer resolves dependencies for PHP 7.4.33, and the application checks the running PHP version before loading dependencies.
 - Extensions: PDO, pdo_mysql, mbstring, GD (with JPEG/PNG/FreeType), OpenSSL, fileinfo, and sessions.
 - MariaDB 10.4 (the supplied schema's original version), or a compatible MySQL database.
-- Composer 2. Run Composer with this project's PHP 8.0 binary so its platform checks match the web server.
+- Composer 2. Run Composer with this project's PHP 7.4 or 8.0 binary so its platform checks match the web server.
 - Apache with mod_rewrite and AllowOverride All, or the PHP development server below.
 - Internet access in the browser for Bootstrap, Bootstrap Icons, and SweetAlert assets loaded from CDNs.
 
@@ -62,13 +62,13 @@ Log in using the new administrator, add a user, project, and development charge,
 
 ## Blank page or missing login
 
-The home route loads `AuthController`; `ErrorsController` renders error pages. Both files are required. In the original code, the home route referenced a deleted `LoginController`, while error rendering relied on a missing `ErrorsController`. Hidden errors could therefore leave the browser blank. The updated startup checks display an explanation when required controllers or Composer dependencies are missing, or PHP is outside 8.0.x. Error logging failures also no longer prevent an error page from appearing.
+The home route loads `AuthController`; `ErrorsController` renders error pages. Both files are required. In the original code, the home route referenced a deleted `LoginController`, while error rendering relied on a missing `ErrorsController`. Hidden errors could therefore leave the browser blank. The updated startup checks display an explanation when required controllers or Composer dependencies are missing, or PHP is outside 7.4.x–8.0.x. Error logging failures also no longer prevent an error page from appearing.
 
 Make sure the updated files have been committed and pushed before your friend clones or pulls the repository. Include new files such as `app/core/Startup.php`, `app/controllers/ErrorsController.php`, `database/schema.sql`, and `scripts/`; copying only modified files is insufficient. Never copy `app/config/local.php` between machines unless its database settings are appropriate for the recipient.
 
 For a failing clone:
 
-1. Confirm Apache/the web server uses PHP 8.0.x, and check `php -v` for the terminal too.
+1. Confirm Apache/the web server uses PHP 7.4.x or 8.0.x, and check `php -v` for the terminal too.
 2. Run `composer install` in the repository directory.
 3. Run `php scripts/check-setup.php` and fix the reported setup problems.
 4. Open the application root, such as `http://localhost/<folder-name>/`, or use the documented development server.
@@ -82,7 +82,7 @@ Use a PHP 8.0-compatible php.ini. An old PHP 7 configuration containing `track_e
 
 - **Login page works but login fails:** check local database settings and create an administrator after importing the clean schema.
 - **404 on every route:** enable Apache mod_rewrite and AllowOverride All, or use the supplied development router.
-- **Composer rejects PHP:** check the PHP executable used by your terminal. This project accepts PHP 8.0.x only. A newer system PHP does not mean Apache uses that same version.
+- **Composer rejects PHP:** check the PHP executable used by your terminal. This project accepts PHP 7.4.x and 8.0.x. A newer system PHP does not mean Apache uses that same version.
 - **Receipts fail:** check directory ownership, upload limits, and PHP upload error messages.
 - **Missing styling or dialogs:** check access to the CDN assets.
 - **Email:** SMTP credentials must be configured before sending email. SMTP delivery requires a real server and is not validated by the setup checker.
@@ -95,6 +95,6 @@ The GitHub Actions workflow in `.github/workflows/php80.yml` installs dependenci
 
 For database smoke checks, configure a separate database whose name ends in `_test`, import `database/schema.sql`, and run `php tests/database-smoke.php`. Test records are rolled back, but auto-increment counters can advance, so use only a disposable test database.
 
-The repository targets PHP 8.0.30 and retains the existing application features. The `.php-version` file records the project version for compatible version managers. If you have several PHP versions installed, use the absolute path to the PHP 8.0 binary for the setup commands and development server, for example `/path/to/php80 -S 127.0.0.1:8080 -t public scripts/router.php`. It does not install PHP or change global XAMPP/Apache settings. Use a PHP 8.0 binary or configure a PHP 8.0 runtime for this project. See [verification results](docs/verification.md).
+The repository targets PHP 7.4.33 and also supports PHP 8.0 and retains the existing application features. The `.php-version` file records the project version for compatible version managers. If you have several PHP versions installed, use the absolute path to the PHP 8.0 binary for the setup commands and development server, for example `/path/to/php80 -S 127.0.0.1:8080 -t public scripts/router.php`. It does not install PHP or change global XAMPP/Apache settings. Use a PHP 7.4 or 8.0 binary or configure a matching runtime for this project. See [verification results](docs/verification.md).
 
 Built on miniPHP; see [LICENSE](LICENSE) for the original license.

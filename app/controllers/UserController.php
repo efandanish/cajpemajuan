@@ -1,6 +1,6 @@
 <?php
 
-class UserController extends Controller
+class UserController extends ModuleController
 {
     public function initialize()
     {
@@ -54,8 +54,28 @@ class UserController extends Controller
     }
 
 
+    public function index()
+    {
+        $this->renderModule('user/index.php', ['users' => $this->user->getAll()]);
+    }
+
+    public function edit($id)
+    {
+        $user = $this->user->getById($id);
+        if (!$user) {
+            header('Location: ' . PUBLIC_ROOT . 'user?error=user_not_found');
+            exit;
+        }
+        $this->renderModule('user/edit.php', ['user' => $user]);
+    }
+
     public function create()
     {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $this->renderModule('user/create.php');
+            return;
+        }
+
         if (
             $_SERVER['REQUEST_METHOD']
             !==
@@ -63,7 +83,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'user'
             );
 
             exit;
@@ -107,7 +127,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_required'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_required'
             );
 
             exit;
@@ -122,7 +142,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_invalid'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_email_invalid'
             );
 
             exit;
@@ -134,7 +154,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_password_short'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_password_short'
             );
 
             exit;
@@ -155,7 +175,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_exists'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_email_exists'
             );
 
             exit;
@@ -189,6 +209,7 @@ class UserController extends Controller
         |--------------------------------------------------------------------------
         */
 
+        $createdUser = $this->user->getByEmail($email);
         $this->notification->create([
             'category' =>
                 'system',
@@ -212,12 +233,12 @@ class UserController extends Controller
                 'user',
 
             'entity_id' =>
-                null
+                $createdUser ? $createdUser['id'] : null
         ]);
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_created'
+            'Location: ' . PUBLIC_ROOT . 'user?success=user_created'
         );
 
         exit;
@@ -233,7 +254,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'user'
             );
 
             exit;
@@ -247,7 +268,7 @@ class UserController extends Controller
         if (!$existingUser) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_not_found'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_not_found'
             );
 
             exit;
@@ -290,7 +311,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_required'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_required'
             );
 
             exit;
@@ -305,7 +326,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_invalid'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_email_invalid'
             );
 
             exit;
@@ -318,7 +339,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_password_short'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_password_short'
             );
 
             exit;
@@ -334,7 +355,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_email_exists'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_email_exists'
             );
 
             exit;
@@ -424,7 +445,7 @@ class UserController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_updated'
+            'Location: ' . PUBLIC_ROOT . 'user?success=user_updated'
         );
 
         exit;
@@ -440,7 +461,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard'
+                'Location: ' . PUBLIC_ROOT . 'user'
             );
 
             exit;
@@ -459,7 +480,7 @@ class UserController extends Controller
         ) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=cannot_delete_self'
+                'Location: ' . PUBLIC_ROOT . 'user?error=cannot_delete_self'
             );
 
             exit;
@@ -473,7 +494,7 @@ class UserController extends Controller
         if (!$user) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=user_not_found'
+                'Location: ' . PUBLIC_ROOT . 'user?error=user_not_found'
             );
 
             exit;
@@ -507,7 +528,7 @@ class UserController extends Controller
 
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=user_deleted'
+            'Location: ' . PUBLIC_ROOT . 'user?success=user_deleted'
         );
 
         exit;

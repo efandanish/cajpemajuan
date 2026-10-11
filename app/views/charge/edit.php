@@ -1,38 +1,11 @@
-<?php if (!empty($developmentCharges)): ?>
-
-    <?php foreach ($developmentCharges as $charge): ?>
-
-        <?php
-
-        $payments =
-            $this->controller
-                ->developmentCharge
-                ->getPayments(
-                    $charge['id']
-                );
-
-        $hasPayments =
-            !empty($payments);
-
-        $hasPaidPayments =
-            $this->controller
-                ->developmentCharge
-                ->hasPaidPayments(
-                    $charge['id']
-                );
-
-        ?>
-
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>charge">Kembali ke Senarai</a></div>
         <div
-            class="modal fade"
-            id="editChargeModal<?= $charge['id'] ?>"
-            tabindex="-1"
-            data-bs-focus="false"
+            class="module-page"
         >
 
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="module-container">
 
-                <div class="modal-content">
+                <div class="card">
 
                     <form
                         method="POST"
@@ -40,11 +13,11 @@
                         class="edit-charge-form"
                     >
 
-                        <div class="modal-header">
+                        <div class="card-header">
 
                             <div>
 
-                                <h5 class="modal-title fw-bold">
+                                <h5 class="card-title fw-bold">
                                     Edit Caj Pemajuan
                                 </h5>
 
@@ -54,16 +27,12 @@
 
                             </div>
 
-                            <button
-                                type="button"
-                                class="btn-close"
-                                data-bs-dismiss="modal"
-                            ></button>
+
 
                         </div>
 
 
-                        <div class="modal-body">
+                        <div class="card-body">
 
                             <div class="row g-3">
 
@@ -73,7 +42,7 @@
                                         Nama Pemaju
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="developer_name"
                                         class="form-control"
@@ -90,7 +59,7 @@
                                         Nama Projek
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="project_name"
                                         class="form-control"
@@ -107,7 +76,7 @@
                                         ID OSC
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="osc_id"
                                         class="form-control"
@@ -123,7 +92,7 @@
                                         No. Lot / PT
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="lot_number"
                                         class="form-control"
@@ -139,7 +108,7 @@
                                         Mukim
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="mukim"
                                         class="form-control"
@@ -155,7 +124,7 @@
                                         No. Fail
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="text"
                                         name="file_number"
                                         class="form-control"
@@ -171,7 +140,7 @@
                                         Jumlah Caj (RM)
                                     </label>
 
-                                    <input
+                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         type="number"
                                         name="charge_amount"
                                         class="form-control"
@@ -190,7 +159,7 @@
                                         Keputusan OSC
                                     </label>
 
-                                    <select
+                                    <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                         name="osc_decision"
                                         class="form-select"
                                     >
@@ -229,13 +198,13 @@
 
                                     <?php if ($hasPaidPayments): ?>
 
-                                        <input
+                                        <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             type="hidden"
                                             name="payment_plan"
                                             value="<?= htmlspecialchars($charge['payment_plan']) ?>"
                                         >
 
-                                        <select
+                                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             class="form-select"
                                             disabled
                                         >
@@ -252,7 +221,7 @@
 
                                     <?php else: ?>
 
-                                        <select
+                                        <select <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                             name="payment_plan"
                                             class="form-select edit-payment-plan"
                                             required
@@ -352,7 +321,7 @@
                                                                 Jumlah (RM)
                                                             </label>
 
-                                                            <input
+                                                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                                                 type="text"
                                                                 class="form-control"
                                                                 value="<?= number_format($payment['amount'], 2, '.', '') ?>"
@@ -368,7 +337,7 @@
                                                                 Tarikh Akhir
                                                             </label>
 
-                                                            <input
+                                                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                                                 type="date"
                                                                 class="form-control"
                                                                 value="<?= htmlspecialchars($payment['due_date'] ?: '') ?>"
@@ -400,7 +369,7 @@
 
                                                 <?php else: ?>
 
-                                                    <input
+                                                    <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                                         type="hidden"
                                                         name="payment_schedule_id[]"
                                                         value="<?= (int) $payment['id'] ?>"
@@ -415,7 +384,7 @@
                                                                 Jumlah (RM)
                                                             </label>
 
-                                                            <input
+                                                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                                                 type="number"
                                                                 name="payment_schedule_amount[]"
                                                                 class="form-control"
@@ -434,7 +403,7 @@
                                                                 Tarikh Akhir
                                                             </label>
 
-                                                            <input
+                                                            <input <?= $_SESSION['user_role'] !== 'admin' ? 'disabled' : '' ?>
                                                                 type="date"
                                                                 name="payment_schedule_due_date[]"
                                                                 class="form-control"
@@ -461,22 +430,16 @@
                         </div>
 
 
-                        <div class="modal-footer">
+                        <div class="card-footer">
 
-                            <button
-                                type="button"
-                                class="btn btn-light border"
-                                data-bs-dismiss="modal"
-                            >
-                                Batal
-                            </button>
 
-                            <button
+
+                            <?php if ($_SESSION['user_role'] === 'admin'): ?><button
                                 type="submit"
                                 class="btn btn-primary"
                             >
                                 Simpan Perubahan
-                            </button>
+                            </button><?php endif; ?>
 
                         </div>
 
@@ -487,7 +450,3 @@
             </div>
 
         </div>
-
-    <?php endforeach; ?>
-
-<?php endif; ?>

@@ -54,7 +54,7 @@ $avatarLetter =
 
     <div class="topbar-actions">
 
-        <form method="GET" action="<?= PUBLIC_ROOT ?>dashboard" class="d-flex gap-2">
+        <form method="GET" action="<?= PUBLIC_ROOT ?><?= isset($yearModule) ? htmlspecialchars($yearModule) : 'dashboard' ?>" class="d-flex gap-2">
 
             <select class="form-select topbar-select" disabled>
                 <option selected>
@@ -128,7 +128,7 @@ $avatarLetter =
 
                     <?php if (!empty($unreadNotificationCount)): ?>
 
-                        <form method="POST" action="<?= PUBLIC_ROOT ?>notify/markAllRead">
+                        <form method="POST" action="<?= PUBLIC_ROOT ?>notification/markAllRead">
 
                             <button type="submit" class="btn btn-sm btn-link text-decoration-none">
                                 Tanda semua dibaca
@@ -147,7 +147,7 @@ $avatarLetter =
 
                         <?php foreach ($notifications as $notification): ?>
 
-                            <form method="POST" action="<?= PUBLIC_ROOT ?>notify/read/<?= $notification['id'] ?>">
+                            <form method="POST" action="<?= PUBLIC_ROOT ?>notification/read/<?= $notification['id'] ?>">
 
                                 <button type="submit"
                                     class="notification-item <?= !$notification['is_read'] ? 'notification-unread' : '' ?>">
@@ -242,7 +242,7 @@ $avatarLetter =
 
                 <div class="notification-footer">
 
-                    <a href="<?= PUBLIC_ROOT ?>notify" class="btn btn-sm btn-outline-primary w-100">
+                    <a href="<?= PUBLIC_ROOT ?>notification" class="btn btn-sm btn-outline-primary w-100">
                         Lihat Semua Notifikasi
                     </a>
 

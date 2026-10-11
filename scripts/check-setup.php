@@ -5,8 +5,8 @@ $check = function ($ok, $message) use (&$failed) {
     echo ($ok ? 'PASS ' : 'FAIL ') . $message . "\n";
     if (!$ok) { $failed = true; }
 };
-$check(PHP_VERSION_ID >= 80000 && PHP_VERSION_ID < 80100, 'PHP 8.0.x only (running ' . PHP_VERSION . ')');
-foreach (array('AuthController', 'ErrorsController', 'DashboardController', 'UserController', 'ProjectController', 'ChargeController', 'NotifyController', 'ReportController') as $controller) {
+$check(PHP_VERSION_ID >= 70400 && PHP_VERSION_ID < 80100, 'PHP 7.4.x or PHP 8.0.x (running ' . PHP_VERSION . ')');
+foreach (array('AuthController', 'ErrorsController', 'DashboardController', 'UserController', 'ProjectController', 'ChargeController', 'NotifyController', 'NotificationController', 'ModuleController', 'ReportController') as $controller) {
     $check(class_exists($controller), 'Controller: ' . $controller);
 }
 foreach (array('pdo', 'pdo_mysql', 'mbstring', 'gd', 'openssl', 'fileinfo') as $extension) {

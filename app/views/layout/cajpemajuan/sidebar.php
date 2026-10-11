@@ -29,78 +29,16 @@
     </div>
 
 
+    <?php $activeModule = strtolower($this->controller->request->param('controller')); ?>
     <nav class="sidebar-nav">
-
-        <a href="<?= PUBLIC_ROOT ?>dashboard" class="sidebar-link active">
-            <span class="sidebar-icon">⌂</span>
-
-            <span>
-                Dashboard
-            </span>
-        </a>
-
-
-        <div class="sidebar-divider"></div>
-
-        <div class="sidebar-section-title">
-            TINDAKAN
-        </div>
-
-        <button type="button" class="sidebar-action-button" data-bs-toggle="modal" data-bs-target="#addChargeModal">
-            <span class="sidebar-icon">
-                +
-            </span>
-
-            <span>
-                Tambah Caj
-            </span>
-        </button>
-
-        <button type="button" class="sidebar-action-button" data-bs-toggle="modal" data-bs-target="#addProjectModal">
-            <span class="sidebar-icon">
-                +
-            </span>
-
-            <span>
-                Tambah Projek
-            </span>
-        </button>
-
-        <div class="sidebar-divider"></div>
-
-
-        <?php if (
-            isset($_SESSION['user_role']) &&
-            $_SESSION['user_role'] === 'admin'
-        ): ?>
-
-            <div class="sidebar-section-title">
-                PENTADBIRAN
-            </div>
-
-            <button type="button" class="sidebar-action-button" data-bs-toggle="modal" data-bs-target="#manageUserModal">
-                <span class="sidebar-icon">
-                    👥
-                </span>
-
-                <span>
-                    Urus Pengguna
-                </span>
-            </button>
-
-            <button type="button" class="sidebar-action-button" data-bs-toggle="modal" data-bs-target="#addUserModal">
-                <span class="sidebar-icon">
-                    +
-                </span>
-
-                <span>
-                    Daftar Pengguna
-                </span>
-            </button>
-
-        <?php endif; ?>
-    </nav>
-
+<a href="<?= PUBLIC_ROOT ?>dashboard" class="sidebar-link <?= in_array($activeModule, ['dashboardcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+<div class="sidebar-divider"></div><div class="sidebar-section-title">MODUL</div>
+<a href="<?= PUBLIC_ROOT ?>charge" class="sidebar-link <?= in_array($activeModule, ['chargecontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">RM</span><span>Caj Pemajuan</span></a>
+<a href="<?= PUBLIC_ROOT ?>project" class="sidebar-link <?= in_array($activeModule, ['projectcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">P</span><span>Projek Pembangunan</span></a>
+<?php if ($_SESSION['user_role'] === 'admin'): ?><div class="sidebar-divider"></div><div class="sidebar-section-title">PENTADBIRAN</div>
+<a href="<?= PUBLIC_ROOT ?>user" class="sidebar-link <?= in_array($activeModule, ['usercontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">👥</span><span>Pengurusan Pengguna</span></a>
+<?php endif; ?>
+</nav>
 
     <div class="sidebar-footer">
 

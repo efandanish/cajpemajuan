@@ -9,7 +9,6 @@ class DashboardController extends Controller
         $this->loadModel('DevelopmentCharge');
         $this->loadModel('Project');
         $this->loadModel('Notification');
-        $this->loadModel('User');
 
         if (session_status() === PHP_SESSION_NONE) {
             session_start();
@@ -27,18 +26,6 @@ class DashboardController extends Controller
 
     public function index()
     {
-        $users = [];
-
-        if (
-            isset($_SESSION['user_role']) &&
-            $_SESSION['user_role'] === 'admin'
-        ) {
-
-            $users =
-                $this->user
-                    ->getAll();
-        }
-
         /*
         |--------------------------------------------------------------------------
         | CURRENT USER
@@ -93,14 +80,6 @@ class DashboardController extends Controller
             ? (int) $_GET['year']
             : 2026;
 
-        $developmentCharges =
-            $this->developmentCharge
-                ->getAllByYear($year);
-
-        $projects =
-            $this->project
-                ->getAllByYear($year);
-
         $totalCollection =
             $this->developmentCharge
                 ->getTotalChargesByYear($year);
@@ -114,6 +93,9 @@ class DashboardController extends Controller
             + $totalCollection
             - $totalExpenditure;
 
+        $chargeSummary = $this->developmentCharge->getDashboardSummaryByYear($year);
+        $projectSummary = $this->project->getDashboardSummaryByYear($year);
+
 
         $this->view->renderWithLayouts(
 
@@ -126,12 +108,6 @@ class DashboardController extends Controller
             [
                 'selectedYear' =>
                     $year,
-
-                'developmentCharges' =>
-                    $developmentCharges,
-
-                'projects' =>
-                    $projects,
 
                 'totalCollection' =>
                     $totalCollection,
@@ -154,8 +130,9 @@ class DashboardController extends Controller
                 'currentUserId' =>
                     $currentUserId,
 
-                'users' =>
-                    $users
+                'chargeSummary' => $chargeSummary,
+                'projectSummary' => $projectSummary,
+
             ]
         );
     }

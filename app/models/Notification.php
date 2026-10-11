@@ -2,6 +2,15 @@
 
 class Notification extends Model
 {
+    public function getById($id)
+    {
+        $database = Database::openConnection();
+        $database->prepare('SELECT * FROM notifications WHERE id = :id LIMIT 1');
+        $database->bindValue(':id', (int) $id);
+        $database->execute();
+        return $database->fetchAssociative();
+    }
+
     public function create($data)
     {
         $database = Database::openConnection();

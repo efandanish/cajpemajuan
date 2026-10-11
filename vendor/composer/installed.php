@@ -3,7 +3,7 @@
         'name' => 'omarelgabry/miniphp',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'fd4fecd39434cde0cc970f46a23094eb8d1054d3',
+        'reference' => '2332f12cd85025f45a3f3ca375843cbf03e9edc5',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -22,7 +22,7 @@
         'omarelgabry/miniphp' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'fd4fecd39434cde0cc970f46a23094eb8d1054d3',
+            'reference' => '2332f12cd85025f45a3f3ca375843cbf03e9edc5',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

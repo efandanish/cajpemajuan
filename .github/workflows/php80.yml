@@ -1,4 +1,4 @@
-name: PHP 8.0 compatibility and fresh installation
+name: PHP 7.4 and 8.0 compatibility and fresh installation
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        php: ['8.0']
+        php: ['7.4', '8.0']
     services:
       database:
         image: mariadb:10.4
@@ -53,13 +53,14 @@ jobs:
           php tests/compatibility-smoke.php
           php tests/startup-smoke.php
           php tests/database-smoke.php
+          php tests/modules-smoke.php
       - name: Verify login page and routing
         run: |
           php -S 127.0.0.1:8080 -t public scripts/router.php > /tmp/cajpemajuan-http.log 2>&1 &
           test_server_pid=$!
           trap 'kill "$test_server_pid"' EXIT
           curl -fsS --retry 5 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/ -o /tmp/cajpemajuan-login.html
-          php -r 'if (!str_contains(file_get_contents("/tmp/cajpemajuan-login.html"), "Selamat Datang")) { exit(1); }'
+          php -r 'if (strpos(file_get_contents("/tmp/cajpemajuan-login.html"), "Selamat Datang") === false) { exit(1); }'
           curl -fsS http://127.0.0.1:8080/css/login.css -o /tmp/cajpemajuan-login.css
           test "$(curl -sS -o /tmp/cajpemajuan-404.html -w '%{http_code}' http://127.0.0.1:8080/unknown-route)" = "404"
           test -s /tmp/cajpemajuan-404.html

@@ -5,8 +5,8 @@ class Startup
 {
     public static function check($root)
     {
-        if (PHP_VERSION_ID < 80000 || PHP_VERSION_ID >= 80100) {
-            self::failure('This project requires PHP 8.0.x. The running PHP version is ' . PHP_VERSION . '. Select PHP 8.0 for this project, including the web server.');
+        if (PHP_VERSION_ID < 70400 || PHP_VERSION_ID >= 80100) {
+            self::failure('This project requires PHP 7.4.x or PHP 8.0.x. The running PHP version is ' . PHP_VERSION . '. Select PHP 7.4 or PHP 8.0 for this project, including the web server.');
         }
         if (!is_readable($root . '/vendor/autoload.php')) {
             self::failure('Composer dependencies are missing. Run composer install in the project directory.');

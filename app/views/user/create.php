@@ -1,23 +1,24 @@
-<div class="modal fade" id="addUserModal" tabindex="-1" data-bs-focus="false">
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>user">Kembali ke Senarai</a></div>
+<div class="module-page">
 
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="module-container">
 
-        <div class="modal-content">
+        <div class="card">
 
             <form method="POST" action="<?= PUBLIC_ROOT ?>user/create" id="addUserForm">
 
-                <div class="modal-header">
+                <div class="card-header">
 
-                    <h5 class="modal-title fw-bold">
+                    <h5 class="card-title fw-bold">
                         Daftar Pengguna Baru
                     </h5>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
 
                 </div>
 
 
-                <div class="modal-body">
+                <div class="card-body">
 
                     <div class="mb-3">
 
@@ -81,11 +82,9 @@
                 </div>
 
 
-                <div class="modal-footer">
+                <div class="card-footer">
 
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">
-                        Batal
-                    </button>
+
 
                     <button type="submit" class="btn btn-primary">
                         Daftar

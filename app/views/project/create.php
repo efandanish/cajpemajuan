@@ -1,22 +1,23 @@
-<div class="modal fade" id="addProjectModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>project">Kembali ke Senarai</a></div>
+<div class="module-page">
+    <div class="module-container">
 
-        <div class="modal-content">
+        <div class="card">
 
             <form method="POST" action="<?= PUBLIC_ROOT ?>project/create" id="addProjectForm">
 
-                <div class="modal-header">
+                <div class="card-header">
 
-                    <h5 class="modal-title">
+                    <h5 class="card-title">
                         Tambah Projek Baru
                     </h5>
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
 
                 </div>
 
 
-                <div class="modal-body">
+                <div class="card-body">
 
                     <h6 class="fw-bold">
                         Maklumat Asas
@@ -368,11 +369,9 @@
                 </div>
 
 
-                <div class="modal-footer">
+                <div class="card-footer">
 
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Batal
-                    </button>
+
 
                     <button type="submit" class="btn btn-success">
                         Tambah Projek

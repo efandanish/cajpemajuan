@@ -1,6 +1,6 @@
 <?php
 
-class ProjectController extends Controller
+class ProjectController extends ModuleController
 {
 
     public function initialize()
@@ -8,24 +8,55 @@ class ProjectController extends Controller
         $this->loadComponents([]);
         $this->loadModel('Project');
         $this->loadModel('Notification');
-        if (
-            empty($_SESSION['user_role']) ||
-            $_SESSION['user_role'] !== 'admin'
-        ) {
-
-            header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=unauthorized'
-            );
-
-            exit;
+        $this->requireLogin();
+        $action = strtolower($this->request->param('action'));
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET' || !in_array($action, ['index', 'edit', 'finance'], true)) {
+            $this->requireAdmin();
         }
+
     }
 
 
+    public function index()
+    {
+        $year = isset($_GET['year']) ? (int) $_GET['year'] : 2026;
+        $this->renderModule('project/index.php', ['projects' => $this->project->getAllByYear($year), 'selectedYear' => $year, 'yearModule' => 'project']);
+    }
+
+    public function finance($id)
+    {
+        $project = $this->project->getById($id);
+        if (!$project) {
+            header('Location: ' . PUBLIC_ROOT . 'project?error=project_not_found');
+            exit;
+        }
+        $schedules = $this->project->getSchedules($id);
+        $sstAsal = (float) $project['sst_value'];
+        // Preserve the existing modal's contract calculation.
+        $kontrakTerkini = (float) $project['meeting_approval_value'];
+        if ($kontrakTerkini <= 0) {
+            $kontrakTerkini = $sstAsal;
+        }
+        $belanjaSebenar = (float) $this->project->getTotalExpenses($id);
+        $this->renderModule('project/finance.php', [
+            'project' => $project, 'schedules' => $schedules,
+            'expenses' => $this->project->getExpenses($id),
+            'variations' => $this->project->getVariations($id),
+            'sstAsal' => $sstAsal, 'kontrakTerkini' => $kontrakTerkini,
+            'belanjaSebenar' => $belanjaSebenar,
+            'bakiKontrak' => $kontrakTerkini - $belanjaSebenar,
+            'jumlahTerjadual' => array_sum(array_column($schedules, 'amount'))
+        ]);
+    }
+
     public function create()
     {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $this->renderModule('project/create.php');
+            return;
+        }
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -34,7 +65,7 @@ class ProjectController extends Controller
         $projectId = $this->project->create($data);
 
         if (!$projectId) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -58,7 +89,7 @@ class ProjectController extends Controller
             'entity_id' => $projectId
         ]);
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard');
+        header('Location: ' . PUBLIC_ROOT . 'project');
         exit;
     }
 
@@ -68,27 +99,21 @@ class ProjectController extends Controller
         $project = $this->project->getById($id);
 
         if (!$project) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
         $schedules = $this->project->getSchedules($id);
 
-        $this->view->renderWithLayouts(
-            Config::get('VIEWS_PATH') . 'layout/cajpemajuan/',
-            Config::get('VIEWS_PATH') . 'project/edit.php',
-            [
-                'project' => $project,
-                'schedules' => $schedules
-            ]
-        );
+        $this->renderModule('project/edit.php', ['project' => $project, 'schedules' => $schedules]);
+
     }
 
 
     public function update($id)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -99,7 +124,7 @@ class ProjectController extends Controller
         if (!$oldProject) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found'
+                'Location: ' . PUBLIC_ROOT . 'project?error=project_not_found'
             );
 
             exit;
@@ -259,7 +284,7 @@ class ProjectController extends Controller
         }
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=project_updated'
+            'Location: ' . PUBLIC_ROOT . 'project/finance/' . $oldProject['id'] . '?success=project_updated'
         );
 
         exit;
@@ -269,14 +294,14 @@ class ProjectController extends Controller
     public function delete($id)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
         $project = $this->project->getById($id);
 
         if (!$project) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -300,7 +325,7 @@ class ProjectController extends Controller
             'entity_id' => $id
         ]);
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard');
+        header('Location: ' . PUBLIC_ROOT . 'project');
         exit;
     }
 
@@ -405,7 +430,7 @@ class ProjectController extends Controller
     public function recordPayment($scheduleId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -414,7 +439,7 @@ class ProjectController extends Controller
 
         if (!$schedule) {
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_not_found'
+                'Location: ' . PUBLIC_ROOT . 'project?error=schedule_not_found'
             );
             exit;
         }
@@ -434,7 +459,7 @@ class ProjectController extends Controller
         if ($amount <= 0 || empty($paymentDate)) {
 
             header(
-                'Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_payment'
+                'Location: ' . PUBLIC_ROOT . 'project?error=invalid_payment'
             );
 
             exit;
@@ -453,17 +478,21 @@ class ProjectController extends Controller
         );
 
         header(
-            'Location: ' . PUBLIC_ROOT . 'dashboard?success=payment_recorded'
+            'Location: ' . PUBLIC_ROOT . 'project/finance/' . $schedule['project_id'] . '?success=payment_recorded'
         );
 
         exit;
     }
     public function cancelPayment($expenseId)
     {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            header('Location: ' . PUBLIC_ROOT . 'project');
+            exit;
+        }
         $expense = $this->project->getExpenseById($expenseId);
 
         if (!$expense) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=expense_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=expense_not_found');
             exit;
         }
 
@@ -475,21 +504,21 @@ class ProjectController extends Controller
             $this->project->markSchedulePending($scheduleId);
         }
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=payment_cancelled');
+        header('Location: ' . PUBLIC_ROOT . 'project/finance/' . $expense['project_id'] . '?success=payment_cancelled');
         exit;
     }
 
     public function addScheduleRecord($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=project_not_found');
             exit;
         }
 
@@ -506,7 +535,7 @@ class ProjectController extends Controller
             : 'Ansuran';
 
         if (empty($date) || $amount <= 0) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_schedule');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=invalid_schedule');
             exit;
         }
 
@@ -517,20 +546,20 @@ class ProjectController extends Controller
             $type
         );
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=schedule_added');
+        header('Location: ' . PUBLIC_ROOT . 'project/finance/' . $project['id'] . '?success=schedule_added');
         exit;
     }
     public function addManualExpense($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=project_not_found');
             exit;
         }
 
@@ -547,7 +576,7 @@ class ProjectController extends Controller
             : '';
 
         if ($amount <= 0 || empty($paymentDate)) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_expense');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=invalid_expense');
             exit;
         }
 
@@ -559,21 +588,21 @@ class ProjectController extends Controller
             $description
         );
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=manual_expense_added');
+        header('Location: ' . PUBLIC_ROOT . 'project/finance/' . $project['id'] . '?success=manual_expense_added');
         exit;
     }
 
     public function addVariationRecord($projectId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
         $project = $this->project->getById($projectId);
 
         if (!$project) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=project_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=project_not_found');
             exit;
         }
 
@@ -598,7 +627,7 @@ class ProjectController extends Controller
             $amount <= 0 ||
             empty($date)
         ) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=invalid_variation');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=invalid_variation');
             exit;
         }
 
@@ -610,14 +639,14 @@ class ProjectController extends Controller
             $date
         );
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=variation_added');
+        header('Location: ' . PUBLIC_ROOT . 'project/finance/' . $project['id'] . '?success=variation_added');
         exit;
     }
 
     public function deleteScheduleRecord($scheduleId)
     {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard');
+            header('Location: ' . PUBLIC_ROOT . 'project');
             exit;
         }
 
@@ -625,18 +654,18 @@ class ProjectController extends Controller
             $this->project->getScheduleById($scheduleId);
 
         if (!$schedule) {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_not_found');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=schedule_not_found');
             exit;
         }
 
         if ($schedule['status'] === 'Dibayar') {
-            header('Location: ' . PUBLIC_ROOT . 'dashboard?error=schedule_paid');
+            header('Location: ' . PUBLIC_ROOT . 'project?error=schedule_paid');
             exit;
         }
 
         $this->project->deleteSchedule($scheduleId);
 
-        header('Location: ' . PUBLIC_ROOT . 'dashboard?success=schedule_deleted');
+        header('Location: ' . PUBLIC_ROOT . 'project/finance/' . $schedule['project_id'] . '?success=schedule_deleted');
         exit;
     }
 }

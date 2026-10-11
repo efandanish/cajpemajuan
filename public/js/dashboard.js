@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.history.replaceState(
                 {},
                 document.title,
-                window.location.pathname
+                window.location.pathname + (params.has('year') ? '?year=' + encodeURIComponent(params.get('year')) : '')
             );
 
         });
@@ -45,13 +45,13 @@ document.addEventListener('DOMContentLoaded', function () {
             window.history.replaceState(
                 {},
                 document.title,
-                window.location.pathname
+                window.location.pathname + (params.has('year') ? '?year=' + encodeURIComponent(params.get('year')) : '')
             );
 
         });
 
     }
-    
+
     if (success === 'schedule_deleted') {
 
         Swal.fire({
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.history.replaceState(
                     {},
                     document.title,
-                    window.location.pathname
+                    window.location.pathname + (params.has('year') ? '?year=' + encodeURIComponent(params.get('year')) : '')
                 );
 
             });
@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.history.replaceState(
                     {},
                     document.title,
-                    window.location.pathname
+                    window.location.pathname + (params.has('year') ? '?year=' + encodeURIComponent(params.get('year')) : '')
                 );
 
             });
@@ -902,20 +902,20 @@ if (chargePaymentPlan) {
             'change',
             function () {
 
-                const modal =
-                    select.closest('.modal');
+                const form =
+                    select.closest('form');
 
-                if (!modal) {
+                if (!form) {
                     return;
                 }
 
                 const container =
-                    modal.querySelector(
+                    form.querySelector(
                         '.edit-installment-container'
                     );
 
                 const chargeAmountInput =
-                    modal.querySelector(
+                    form.querySelector(
                         'input[name="charge_amount"]'
                     );
 
@@ -1043,87 +1043,6 @@ if (chargePaymentPlan) {
     });
 
     /*
-|--------------------------------------------------------------------------
-| OPEN EDIT USER MODAL
-|--------------------------------------------------------------------------
-*/
-
-document
-    .querySelectorAll('.open-edit-user')
-    .forEach(function (button) {
-
-        button.addEventListener(
-            'click',
-            function () {
-
-                const userId =
-                    button.dataset.userId;
-
-
-                const manageElement =
-                    document.getElementById(
-                        'manageUserModal'
-                    );
-
-
-                const editElement =
-                    document.getElementById(
-                        'editUserModal' + userId
-                    );
-
-
-                if (
-                    !manageElement ||
-                    !editElement
-                ) {
-                    return;
-                }
-
-
-                const manageModal =
-                    bootstrap.Modal.getInstance(
-                        manageElement
-                    );
-
-
-                if (manageModal) {
-
-                    manageElement.addEventListener(
-                        'hidden.bs.modal',
-                        function showEditModal() {
-
-                            manageElement
-                                .removeEventListener(
-                                    'hidden.bs.modal',
-                                    showEditModal
-                                );
-
-
-                            const editModal =
-                                bootstrap.Modal
-                                    .getOrCreateInstance(
-                                        editElement
-                                    );
-
-
-                            editModal.show();
-
-                        }
-                    );
-
-
-                    manageModal.hide();
-
-                }
-
-            }
-        );
-
-    });
-
-
-
-/*
 |--------------------------------------------------------------------------
 | CREATE USER
 |--------------------------------------------------------------------------

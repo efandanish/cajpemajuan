@@ -1,19 +1,21 @@
+<a class="btn btn-primary mb-3" href="<?= PUBLIC_ROOT ?>user/create">+ Tambah Pengguna</a>
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>user">Kembali ke Senarai</a></div>
 <?php if (
     isset($_SESSION['user_role']) &&
     $_SESSION['user_role'] === 'admin'
 ): ?>
 
-    <div class="modal fade" id="manageUserModal" tabindex="-1">
+    <div class="module-page">
 
-        <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="module-container">
 
-            <div class="modal-content">
+            <div class="card">
 
-                <div class="modal-header">
+                <div class="card-header">
 
                     <div>
 
-                        <h5 class="modal-title fw-bold">
+                        <h5 class="card-title fw-bold">
                             Pengurusan Pengguna
                         </h5>
 
@@ -25,12 +27,12 @@
                     </div>
 
 
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
 
                 </div>
 
 
-                <div class="modal-body">
+                <div class="card-body">
 
                     <div class="table-responsive">
 
@@ -100,10 +102,7 @@
 
                                             <td class="text-end">
 
-                                                <button type="button" class="btn btn-sm btn-outline-primary open-edit-user"
-                                                    data-user-id="<?= $user['id'] ?>">
-                                                    Edit
-                                                </button>
+                                                <a class="btn btn-sm btn-outline-primary" href="<?= PUBLIC_ROOT ?>user/edit/<?= $user['id'] ?>">Edit</a>
 
 
                                                 <?php if (
@@ -151,11 +150,9 @@
                 </div>
 
 
-                <div class="modal-footer">
+                <div class="card-footer">
 
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="modal">
-                        Tutup
-                    </button>
+
 
                 </div>
 

@@ -147,7 +147,8 @@ class App {
                 strtolower($controller) === "errorscontroller" ||
                 !file_exists(APP . 'controllers/' . $controller . '.php')){
                 return false;
-            }else { return true; }
+            }
+            return (new ReflectionClass($controller))->isInstantiable();
 
         }else { return true; }
 
@@ -170,7 +171,16 @@ class App {
                 !method_exists($controller, $method)  ||
                 strtolower($method) === "index" ){
                 return false;
-            }else { return true; }
+            }
+
+            $action = new ReflectionMethod($controller, $method);
+            // URL actions must not expose lifecycle hooks or framework helpers.
+            return $action->isPublic()
+                && !$action->isStatic()
+                && !$action->isConstructor()
+                && !$action->isDestructor()
+                && !in_array(strtolower($method), ['initialize', 'beforeaction', 'startupprocess'], true)
+                && !in_array($action->getDeclaringClass()->getName(), ['Controller', 'ModuleController'], true);
 
         }else { return true; }
 

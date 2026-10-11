@@ -1,3 +1,4 @@
+<?php if ($_SESSION['user_role'] === 'admin'): ?><a class="btn btn-primary mb-3" href="<?= PUBLIC_ROOT ?>charge/create">+ Tambah Caj</a><?php endif; ?>
 <div class="card dashboard-table-card mb-4">
 
     <div class="card-header dashboard-table-header">
@@ -74,34 +75,7 @@
 
                         <?php foreach ($developmentCharges as $charge): ?>
 
-                            <?php
-                            $totalPaid =
-                                $this->controller
-                                    ->developmentCharge
-                                    ->getTotalPaid(
-                                        $charge['id']
-                                    );
-
-                            $chargeAmount =
-                                (float) $charge['charge_amount'];
-
-                            if ($totalPaid <= 0) {
-
-                                $paymentStatus =
-                                    'Belum Dibayar';
-
-                            } elseif ($totalPaid < $chargeAmount) {
-
-                                $paymentStatus =
-                                    'Bayaran Sebahagian';
-
-                            } else {
-
-                                $paymentStatus =
-                                    'Selesai Dibayar';
-                            }
-
-                            ?>
+                            <?php $totalPaid = $charge['total_paid']; $paymentStatus = $charge['payment_status']; ?>
 
                             <tr class="charge-row" data-search="<?=
                                 strtolower(
@@ -206,20 +180,20 @@
 
                                     <div class="d-flex justify-content-end gap-2">
 
-                                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
-                                            data-bs-target="#chargePaymentModal<?= $charge['id'] ?>" title="Rekod Bayaran">
+                                        <a class="btn btn-sm btn-outline-secondary" href="<?= PUBLIC_ROOT ?>charge/payment/<?= $charge['id'] ?>">
                                             RM
-                                        </button>
+                                        </a>
+
+                                        <?php if ($_SESSION['user_role'] !== 'admin'): ?><a class="btn btn-sm btn-outline-primary" href="<?= PUBLIC_ROOT ?>charge/edit/<?= $charge['id'] ?>">Butiran</a><?php endif; ?>
 
                                         <?php if (
                                             isset($_SESSION['user_role']) &&
                                             $_SESSION['user_role'] === 'admin'
                                         ): ?>
 
-                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                                data-bs-target="#editChargeModal<?= $charge['id'] ?>">
+                                            <a class="btn btn-sm btn-outline-primary" href="<?= PUBLIC_ROOT ?>charge/edit/<?= $charge['id'] ?>">
                                                 Edit
-                                            </button>
+                                            </a>
 
 
                                             <form method="POST" action="<?= PUBLIC_ROOT ?>charge/delete/<?= $charge['id'] ?>"

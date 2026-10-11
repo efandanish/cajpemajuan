@@ -668,15 +668,7 @@ body.sidebar-collapsed .sidebar-footer form {
 
 }
 
-/* BOOTSTRAP MODAL STACKING */
 
-.modal {
-    z-index: 1060 !important;
-}
-
-.modal-backdrop {
-    z-index: 1050 !important;
-}
 
 .app-sidebar {
     z-index: 1030;
@@ -686,53 +678,115 @@ body.sidebar-collapsed .sidebar-footer form {
     z-index: 1020;
 }
 
-/* DASHBOARD STAT CARDS */
+/* DASHBOARD SUMMARY PANES */
 
-.dashboard-stat-card {
-    border: 1px solid var(--border);
-    background: #ffffff;
+.dashboard-overview {
+    padding-top: 12px;
+    padding-bottom: 40px;
 }
 
-.dashboard-stat-card .card-body {
-    padding: 20px;
+.dashboard-page-header {
+    margin-bottom: 32px;
+}
+
+.dashboard-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card-bg);
+    box-shadow: 0 2px 8px rgba(24, 36, 51, 0.04);
+}
+
+.dashboard-summary-pane {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 230px;
+    padding: 32px;
+    transition: background-color 0.15s ease;
+}
+
+.dashboard-summary-pane:nth-child(odd) {
+    border-right: 1px solid var(--border);
+}
+
+.dashboard-summary-pane:nth-child(-n+2) {
+    border-bottom: 1px solid var(--border);
+}
+
+@media (hover: hover) {
+    .dashboard-summary-pane:hover {
+        background: var(--app-bg);
+    }
+}
+
+.stat-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
 }
 
 .stat-label {
+    min-width: 0;
     font-size: 12px;
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    overflow-wrap: anywhere;
 }
 
 .stat-value {
-    margin-top: 6px;
-    font-size: 24px;
+    margin-bottom: 24px;
+    font-size: clamp(32px, 3vw, 40px);
+    line-height: 1.2;
     font-weight: 700;
     color: var(--text-main);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
 }
 
 .stat-footer {
-    margin-top: 16px;
-    padding-top: 12px;
-    border-top: 1px solid var(--border);
-
+    margin-top: auto;
     font-size: 12px;
+    line-height: 1.5;
     color: var(--text-muted);
 }
 
 .stat-icon {
-    width: 46px;
-    height: 46px;
-
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    border-radius: 10px;
-
-    font-size: 20px;
+    border-radius: 12px;
+    font-size: 24px;
     font-weight: 700;
+}
+
+@media (max-width: 767.98px) {
+    .dashboard-summary-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .dashboard-summary-pane {
+        min-height: 210px;
+        padding: 24px;
+    }
+
+    .dashboard-summary-pane:nth-child(odd) {
+        border-right: 0;
+    }
+
+    .dashboard-summary-pane:not(:last-child) {
+        border-bottom: 1px solid var(--border);
+    }
 }
 
 .stat-icon-blue {
@@ -753,41 +807,6 @@ body.sidebar-collapsed .sidebar-footer form {
 .stat-icon-purple {
     background: #f0eafa;
     color: #ae3ec9;
-}
-
-/* ADD PROJECT MODAL */
-
-#addProjectModal .modal-dialog {
-    max-height: calc(100vh - 40px);
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-#addProjectModal .modal-content {
-    max-height: calc(100vh - 40px);
-    overflow: hidden;
-}
-
-#addProjectModal form {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 40px);
-}
-
-#addProjectModal .modal-header {
-    flex-shrink: 0;
-}
-
-#addProjectModal .modal-body {
-    overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 0;
-}
-
-#addProjectModal .modal-footer {
-    flex-shrink: 0;
-    background: #ffffff;
-    border-top: 1px solid var(--border);
 }
 
 /* DASHBOARD TABLES */
@@ -1439,82 +1458,8 @@ body.sidebar-collapsed .sidebar-footer form {
     background: #f1f6fd;
 }
 
-/* =========================================================
-   CHARGE PAYMENT MODAL FIX
-   ========================================================= */
-
-[id^="chargePaymentModal"] {
-    z-index: 1065 !important;
-}
-
-[id^="chargePaymentModal"] .modal-dialog {
-    position: relative;
-    z-index: 1066;
-}
-
-[id^="chargePaymentModal"] .modal-content {
-    position: relative;
-    z-index: 1067;
-
-    background: #ffffff;
-    border-radius: 12px;
-}
-
-.modal-backdrop {
-    z-index: 1050 !important;
-}
-
-.charge-payment-modal {
-    z-index: 1065 !important;
-}
-
-.charge-payment-modal .modal-dialog {
-    z-index: 1066;
-}
-
-.charge-payment-modal .modal-content {
-    background: #ffffff;
-}
-
 .swal2-container {
     z-index: 20000 !important;
-}
-
-/* =========================================================
-   EDIT DEVELOPMENT CHARGE MODAL
-   ========================================================= */
-
-[id^="editChargeModal"] .modal-dialog {
-    max-height: calc(100vh - 40px);
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-[id^="editChargeModal"] .modal-content {
-    max-height: calc(100vh - 40px);
-    overflow: hidden;
-}
-
-[id^="editChargeModal"] form {
-    display: flex;
-    flex-direction: column;
-    max-height: calc(100vh - 40px);
-}
-
-[id^="editChargeModal"] .modal-header {
-    flex-shrink: 0;
-}
-
-[id^="editChargeModal"] .modal-body {
-    overflow-y: auto;
-    flex: 1 1 auto;
-    min-height: 0;
-}
-
-[id^="editChargeModal"] .modal-footer {
-    flex-shrink: 0;
-    background: #ffffff;
-    border-top: 1px solid var(--border);
 }
 
 /* RESPONSIVE */
@@ -1547,4 +1492,13 @@ body.sidebar-collapsed .sidebar-footer form {
         width: 100% !important;
         min-width: 0;
     }
+}
+/* Standalone project finance printing keeps every section visible. */
+@media print {
+    .app-sidebar, .app-topbar, .module-page button, .app-content > a,
+    .app-content > .d-flex { display: none !important; }
+    .app-main { margin-left: 0 !important; }
+    .app-content { padding: 0; }
+    .module-page .card { border: 0; box-shadow: none; }
+    .module-page .finance-section { break-inside: avoid; }
 }

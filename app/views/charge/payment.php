@@ -1,30 +1,15 @@
-<?php if (!empty($developmentCharges)): ?>
+<div class="d-flex gap-2 mb-3"><a class="btn btn-outline-secondary" href="<?= PUBLIC_ROOT ?>charge">Kembali ke Senarai</a></div>
+        <div class="module-page">
 
-    <?php foreach ($developmentCharges as $charge): ?>
+            <div class="module-container">
 
-        <?php
+                <div class="card">
 
-        $payments =
-            $this->controller
-                ->developmentCharge
-                ->getPayments(
-                    $charge['id']
-                );
-
-        ?>
-
-        <div class="modal fade charge-payment-modal" id="chargePaymentModal<?= $charge['id'] ?>" tabindex="-1"
-            data-bs-focus="false">
-
-            <div class="modal-dialog modal-lg modal-dialog-scrollable">
-
-                <div class="modal-content">
-
-                    <div class="modal-header">
+                    <div class="card-header">
 
                         <div>
 
-                            <h5 class="modal-title fw-bold">
+                            <h5 class="card-title fw-bold">
                                 Rekod Bayaran
                             </h5>
 
@@ -34,12 +19,12 @@
 
                         </div>
 
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
 
                     </div>
 
 
-                    <div class="modal-body">
+                    <div class="card-body">
 
                         <h6 class="fw-bold mb-3">
                             Senarai Ansuran
@@ -121,7 +106,7 @@
                                             <hr>
 
 
-                                            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/payment/<?= $payment['id'] ?>"
+                                            <?php if ($_SESSION['user_role'] === 'admin'): ?><form method="POST" action="<?= PUBLIC_ROOT ?>charge/payment/<?= $payment['id'] ?>"
                                                 enctype="multipart/form-data">
 
                                                 <div class="row g-3">
@@ -163,7 +148,7 @@
 
                                                 </div>
 
-                                            </form>
+                                            </form><?php endif; ?>
 
 
                                         <?php else: ?>
@@ -212,14 +197,14 @@
                                                     <?php endif; ?>
 
 
-                                                    <form method="POST" action="<?= PUBLIC_ROOT ?>charge/cancelPayment/<?= $payment['id'] ?>"
+                                                    <?php if ($_SESSION['user_role'] === 'admin'): ?><form method="POST" action="<?= PUBLIC_ROOT ?>charge/cancelPayment/<?= $payment['id'] ?>"
                                                         class="cancel-charge-payment-form">
 
                                                         <button type="submit" class="btn btn-sm btn-outline-danger">
                                                             Batalkan Bayaran
                                                         </button>
 
-                                                    </form>
+                                                    </form><?php endif; ?>
 
                                                 </div>
 
@@ -243,13 +228,13 @@
                             </div>
 
 
-                            <form method="POST" action="<?= PUBLIC_ROOT ?>charge/generatePaymentSchedule/<?= $charge['id'] ?>">
+                            <?php if ($_SESSION['user_role'] === 'admin'): ?><form method="POST" action="<?= PUBLIC_ROOT ?>charge/generatePaymentSchedule/<?= $charge['id'] ?>">
 
                                 <button type="submit" class="btn btn-outline-primary">
                                     Jana Jadual Bayaran
                                 </button>
 
-                            </form>
+                            </form><?php endif; ?>
 
 
                         <?php endif; ?>
@@ -257,11 +242,9 @@
                     </div>
 
 
-                    <div class="modal-footer">
+                    <div class="card-footer">
 
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                            Tutup
-                        </button>
+
 
                     </div>
 
@@ -270,7 +253,3 @@
             </div>
 
         </div>
-
-    <?php endforeach; ?>
-
-<?php endif; ?>

@@ -35,6 +35,23 @@ class DevelopmentCharge extends Model
         return $result['total'];
     }
 
+    public function getDashboardSummaryByYear($year)
+    {
+        $database = Database::openConnection();
+        // Match getAllByYear's cohort and getTotalPaid's paid-status rule.
+        $database->prepare("
+            SELECT COUNT(DISTINCT c.id) AS record_count,
+                COALESCE(SUM(p.amount), 0) AS paid_amount
+            FROM development_charges c
+            LEFT JOIN development_charge_payments p
+                ON p.development_charge_id = c.id AND p.status = 'Dibayar'
+            WHERE YEAR(c.created_at) = :year
+        ");
+        $database->bindValue(':year', (int) $year);
+        $database->execute();
+        return $database->fetchAssociative();
+    }
+
     public function getAllByYear($year)
     {
         $database = Database::openConnection();
