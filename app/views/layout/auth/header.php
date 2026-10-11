@@ -16,6 +16,8 @@
 
     <link rel="stylesheet" href="<?= PUBLIC_ROOT ?>css/login.css">
 
+    <link rel="icon" type="image/x-icon" href="<?= PUBLIC_ROOT ?>favicon.ico">
+
 </head>
 
 <body class="login-page"></body>

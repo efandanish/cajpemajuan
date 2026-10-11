@@ -3,9 +3,7 @@
 
         <div class="brand-left">
 
-            <div class="brand-icon">
-                $
-            </div>
+            <img class="brand-logo" src="<?= PUBLIC_ROOT ?>img/mpkl.png" alt="Logo Majlis Perbandaran Kuala Langat">
 
             <div class="brand-text">
 
@@ -22,8 +20,8 @@
         </div>
 
 
-        <button type="button" id="sidebarToggle" class="sidebar-toggle" title="Buka / Tutup Sidebar">
-            ☰
+        <button type="button" id="sidebarToggle" class="sidebar-toggle" title="Buka / Tutup Sidebar" aria-label="Buka / Tutup Sidebar">
+            <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#menu"></use></svg>
         </button>
 
     </div>
@@ -31,12 +29,12 @@
 
     <?php $activeModule = strtolower($this->controller->request->param('controller')); ?>
     <nav class="sidebar-nav">
-<a href="<?= PUBLIC_ROOT ?>dashboard" class="sidebar-link <?= in_array($activeModule, ['dashboardcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a>
+<a href="<?= PUBLIC_ROOT ?>dashboard" title="Dashboard" class="sidebar-link <?= in_array($activeModule, ['dashboardcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#dashboard"></use></svg></span><span>Dashboard</span></a>
 <div class="sidebar-divider"></div><div class="sidebar-section-title">MODUL</div>
-<a href="<?= PUBLIC_ROOT ?>charge" class="sidebar-link <?= in_array($activeModule, ['chargecontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">RM</span><span>Caj Pemajuan</span></a>
-<a href="<?= PUBLIC_ROOT ?>project" class="sidebar-link <?= in_array($activeModule, ['projectcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">P</span><span>Projek Pembangunan</span></a>
+<a href="<?= PUBLIC_ROOT ?>charge" title="Caj Pemajuan" class="sidebar-link <?= in_array($activeModule, ['chargecontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#cash"></use></svg></span><span>Caj Pemajuan</span></a>
+<a href="<?= PUBLIC_ROOT ?>project" title="Projek Pembangunan" class="sidebar-link <?= in_array($activeModule, ['projectcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#buildings"></use></svg></span><span>Projek Pembangunan</span></a>
 <?php if ($_SESSION['user_role'] === 'admin'): ?><div class="sidebar-divider"></div><div class="sidebar-section-title">PENTADBIRAN</div>
-<a href="<?= PUBLIC_ROOT ?>user" class="sidebar-link <?= in_array($activeModule, ['usercontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon">👥</span><span>Pengurusan Pengguna</span></a>
+<a href="<?= PUBLIC_ROOT ?>user" title="Pengurusan Pengguna" class="sidebar-link <?= in_array($activeModule, ['usercontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#people"></use></svg></span><span>Pengurusan Pengguna</span></a>
 <?php endif; ?>
 </nav>
 
@@ -44,9 +42,9 @@
 
         <form method="POST" action="<?= PUBLIC_ROOT ?>auth/logout">
 
-            <button type="submit" class="sidebar-logout">
+            <button type="submit" class="sidebar-logout" title="Log Keluar" aria-label="Log Keluar">
                 <span class="sidebar-icon">
-                    ↪
+                    <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#logout"></use></svg>
                 </span>
 
                 <span>

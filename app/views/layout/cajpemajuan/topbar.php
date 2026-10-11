@@ -84,8 +84,8 @@ $avatarLetter =
         <div class="dropdown">
 
             <button type="button" class="btn btn-light border notification-button position-relative"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                🔔
+                data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifikasi">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#bell"></use></svg>
 
                 <?php if (!empty($unreadNotificationCount)): ?>
 

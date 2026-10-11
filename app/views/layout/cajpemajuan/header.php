@@ -21,6 +21,8 @@
 
     <link rel="stylesheet" href="<?= PUBLIC_ROOT ?>css/project-finance.css">
 
+    <link rel="icon" type="image/x-icon" href="<?= PUBLIC_ROOT ?>favicon.ico">
+
 </head>
 
 
