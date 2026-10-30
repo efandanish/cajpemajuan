@@ -1,0 +1,67 @@
+.DS_Store
+
+# Logs
+app/logs/*
+!app/logs/.gitkeep
+
+# Uploaded receipts
+public/uploads/receipts/*
+!public/uploads/receipts/.gitkeep
+
+# Local/private config
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# Backups
+*.bak
+*.backup
+*.old
+app/config/local.php
+
+# Private configuration, exports and runtime data
+.env.*
+!.env.example
+app/config/config.php
+app/config/local.*.php
+!app/config/local.example.php
+*.sql
+!database/schema.sql
+!database/caj_pemajuan.sanitized.sql
+!database/migrations/*.sql
+!_installation/01 database.sql
+!_installation/02 tables.sql
+!_installation/03 triggers.sql
+!_installation/04 users.example.sql
+*.sql.gz
+*.sql.zip
+*.dump
+*.sqlite*
+*.log
+app/backups/*
+!app/backups/.gitignore
+app/uploads/*
+!app/uploads/.gitignore
+public/uploads/receipts/*
+!public/uploads/receipts/.gitkeep
+app/cache/
+node_modules/
+dist/
+build/
+coverage/
+docker/**/local.php
+docker/**/compose.override.*
+docker/**/docker-compose.override.*
+
+# Application-only publication: keep these locally, never include in its Git tree.
+/docs/
+/tests/
+/docker/
+/vendor/
+/_installation/
+/.github/
+/.scrutinizer.yml
+/scripts/php825
+/scripts/php825-stage
