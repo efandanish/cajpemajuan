@@ -75,9 +75,6 @@
 							<li id="users">
 								<a href="<?= PUBLIC_ROOT . "Admin/Users"; ?>"><i class="fa fa-users fa-fw"></i> Users</a>
 							</li>
-							<li id="backups">
-								<a href="<?= PUBLIC_ROOT . "Admin/Backups"; ?>"><i class="fa fa-database fa-fw"></i> Backups</a>
-							</li>
 						<?php } ?>
 						<li>
                             <a href="https://github.com/OmarElGabry/miniPHP" target="_blank" class="btn btn-social-icon btn-github"><i class="fa fa-github fa-2x"></i><br>Support!</a>

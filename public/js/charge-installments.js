@@ -80,7 +80,7 @@
         }
         function render(restore) {
             const automatic = plan.value === '3 Ansuran';
-            const count = automatic ? 3 : (plan.value === '4 Ansuran' ? 4 : 0);
+            const count = automatic ? 3 : 0;
             section.style.display = count ? 'block' : 'none';
             controls.hidden = !automatic;
             firstDate.disabled = !automatic;

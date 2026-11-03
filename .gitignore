@@ -28,8 +28,7 @@ app/config/config.php
 app/config/local.*.php
 !app/config/local.example.php
 *.sql
-!database/schema.sql
-!database/caj_pemajuan.sanitized.sql
+!database/caj_pemajuan_clean.sql
 !database/migrations/*.sql
 !_installation/01 database.sql
 !_installation/02 tables.sql
@@ -40,8 +39,6 @@ app/config/local.*.php
 *.dump
 *.sqlite*
 *.log
-app/backups/*
-!app/backups/.gitignore
 app/uploads/*
 !app/uploads/.gitignore
 public/uploads/receipts/*

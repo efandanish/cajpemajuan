@@ -158,9 +158,6 @@ $oldValue = function ($key) use ($oldInput) {
                                     3 Ansuran
                                 </option>
 
-                                <option value="4 Ansuran" <?= isset($oldInput['payment_plan']) && $oldInput['payment_plan'] === '4 Ansuran' ? 'selected' : '' ?>>
-                                    4 Ansuran
-                                </option>
                             </select>
 
                         </div>

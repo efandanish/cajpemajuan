@@ -21,8 +21,8 @@ return array(
    */
   "DB_HOST" => "localhost",
   "DB_NAME" => "caj_pemajuan",
-  "DB_USER" => "root",
-  "DB_PASS" => "",
+  "DB_USER" => "CHANGE_ME_DB_USER",
+  "DB_PASS" => "CHANGE_ME_DB_PASSWORD",
   'DB_CHARSET' => 'utf8',
 
   /**
@@ -64,7 +64,7 @@ return array(
    *
    */
   "ENCRYPTION_KEY" => '' /* Generate a unique private value before use. */,
-  "HMAC_SALT" => "a8C7n7^Ed0%8Qfd9K4m6d$86Dab",
+  "HMAC_SALT" => '' /* Generate a unique private value before use. */,
   "HASH_KEY" => '' /* Generate a unique private value before use. */,
 
   /**

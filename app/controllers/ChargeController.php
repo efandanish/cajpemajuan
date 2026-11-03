@@ -41,33 +41,25 @@ class ChargeController extends ModuleController
             exit;
         }
 
-        $this->atomic(function () use ($charge, $id) {
-            // Notification
+        $deleted = $this->atomic(function () use ($id) {
+            // Fresh locked snapshots: payments are removed by ON DELETE CASCADE, so capture them first.
+            $charge = $this->developmentCharge->lockById($id);
+            if (!$charge) { return false; }
+            $payments = $this->developmentCharge->getPayments($id, true);
 
-            $this->notification->create([
-            'category' => 'charge',
+            if ($this->developmentCharge->delete($id) !== 1) { throw new RuntimeException('Charge delete failed.'); }
 
-            'action' => 'deleted',
-
-            'title' => 'Caj Pemajuan Dipadam',
-
-            'message' =>
-                $charge['osc_id'] .
-                ' - ' .
-                $charge['developer_name'] .
-                ' telah dipadam.',
-
-            'entity_type' =>
-                'development_charge',
-
-            'entity_id' =>
-                $id
-            ]);
-
-            $this->developmentCharge->delete($id);
-
-
+            foreach ($payments as $payment) {
+                $this->audit('delete', 'development_charge_payment', $payment['id'], ['before' => $payment, 'reason' => 'charge_deleted']);
+            }
+            $this->audit('delete', 'development_charge', $id, ['before' => $charge]);
+            return true;
         });
+
+        if (!$deleted) {
+            header('Location: ' . ReportingYear::url('charge?error=charge_not_found'));
+            exit;
+        }
 
         header(
             'Location: ' . ReportingYear::url('charge?success=charge_deleted')
@@ -86,32 +78,31 @@ class ChargeController extends ModuleController
             $this->atomic(function () use ($id, &$result) {
                 $old = $this->developmentCharge->lockById($id);
                 if (!$old) { return null; }
-                $payments = $this->developmentCharge->getPayments($id);
+                $payments = $this->developmentCharge->getPayments($id, true);
                 $result = ChargeValidation::validate($_POST, $old, $payments);
                 if ($result['errors']) { throw new DomainException('Charge edit validation failed.'); }
-                $this->developmentCharge->update($id, $result['data']);
+                if (!$this->developmentCharge->update($id, $result['data'])) { throw new RuntimeException('Charge update failed.'); }
+                $this->audit('update', 'development_charge', $id, ['before' => $old, 'after' => $result['data']]);
                 if ($old['payment_plan'] !== $result['data']['payment_plan']) {
-                    $this->developmentCharge->deletePendingPayments($id);
+                    // Same filter as deletePendingPayments(); the charge lock keeps this set stable.
+                    $pending = array_values(array_filter($this->developmentCharge->getPayments($id, true), function ($payment) {
+                        return $payment['status'] === 'Menunggu';
+                    }));
+                    if ($this->developmentCharge->deletePendingPayments($id) !== count($pending)) {
+                        throw new RuntimeException('Pending payment delete count mismatch.');
+                    }
+                    foreach ($pending as $oldPayment) {
+                        $this->audit('delete', 'development_charge_payment', $oldPayment['id'], ['before' => $oldPayment, 'reason' => 'schedule_replaced']);
+                    }
                     foreach ($result['new'] as $row) {
-                        $this->developmentCharge->addPaymentSchedule($id, $row[0], $row[1], $row[2]);
+                        $paymentId = $this->developmentCharge->addPaymentSchedule($id, $row[0], $row[1], $row[2]);
+                        $this->audit('create', 'development_charge_payment', $paymentId, ['after' => ['development_charge_id' => $id, 'installment_no' => $row[0], 'amount' => $row[1], 'due_date' => $row[2], 'status' => 'Menunggu']]);
                     }
                 }
                 foreach ($result['updates'] as $row) {
+                    $oldPayment = $this->developmentCharge->getPaymentById($row[0]);
                     $this->developmentCharge->updatePendingPaymentSchedule($row[0], $id, $row[1], $row[2]);
-                }
-                $changes = [];
-                foreach (['developer_name' => 'Nama Pemaju', 'project_name' => 'Nama Projek', 'osc_id' => 'ID OSC',
-                    'charge_amount' => 'Jumlah Caj', 'osc_decision' => 'Keputusan OSC', 'payment_plan' => 'Pelan Bayaran'] as $key => $label) {
-                    $changed = $key === 'charge_amount' ? (float) $old[$key] !== (float) $result['data'][$key]
-                        : $old[$key] !== $result['data'][$key];
-                    if ($changed) { $changes[] = $label; }
-                }
-                if ($changes) {
-                    $this->notification->create([
-                        'category' => 'charge', 'action' => 'updated', 'title' => 'Caj Pemajuan Dikemaskini',
-                        'message' => mb_substr($result['data']['osc_id'] . ' dikemaskini: ' . implode(', ', $changes) . '.', 0, 255),
-                        'entity_type' => 'development_charge', 'entity_id' => $id
-                    ]);
+                    $this->audit('update', 'development_charge_payment', $row[0], ['before' => $oldPayment, 'after' => array_merge($oldPayment ?: [], ['amount' => $row[1], 'due_date' => $row[2]]), 'schedule' => true]);
                 }
                 return $result;
             });
@@ -180,13 +171,10 @@ class ChargeController extends ModuleController
             $id = $this->developmentCharge->create($result['data']);
             if (!$id) { throw new RuntimeException('Charge insertion failed.'); }
             foreach ($result['new'] as $row) {
-                $this->developmentCharge->addPaymentSchedule($id, $row[0], $row[1], $row[2]);
+                $paymentId = $this->developmentCharge->addPaymentSchedule($id, $row[0], $row[1], $row[2]);
+                $this->audit('create', 'development_charge_payment', $paymentId, ['after' => ['development_charge_id' => $id, 'installment_no' => $row[0], 'amount' => $row[1], 'due_date' => $row[2], 'status' => 'Menunggu']]);
             }
-            $this->notification->create([
-                'category' => 'charge', 'action' => 'created', 'title' => 'Caj Pemajuan Baru',
-                'message' => mb_substr($result['data']['osc_id'] . ' - ' . $result['data']['developer_name'] . ' telah didaftarkan.', 0, 255),
-                'entity_type' => 'development_charge', 'entity_id' => $id
-            ]);
+            $this->audit('create', 'development_charge', $id, ['after' => $result['data']]);
         });
         header('Location: ' . ReportingYear::url('charge?success=charge_added'));
         exit;
@@ -446,33 +434,7 @@ class ChargeController extends ModuleController
                 $receiptPath,
                 $receiptNumber
             );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICATION
-        |--------------------------------------------------------------------------
-        */
-
-        $this->notification->create([
-            'category' => 'payment',
-            'action' => 'created',
-            'title' => 'Bayaran Caj Direkodkan',
-
-            'message' =>
-                'Bayaran ansuran bernilai RM ' .
-                number_format(
-                    $payment['amount'],
-                    2
-                ) .
-                ' telah direkodkan.',
-
-            'entity_type' =>
-                'development_charge_payment',
-
-            'entity_id' =>
-                $paymentId
-        ]);
+        $this->audit('update', 'development_charge_payment', $paymentId, ['before' => $current, 'after' => array_merge($current, ['status' => 'Dibayar', 'payment_date' => $paymentDate, 'receipt_file' => $receiptPath, 'receipt_number' => $receiptNumber]), 'receipt' => true]);
 
 
             });
@@ -527,64 +489,47 @@ class ChargeController extends ModuleController
 
         /*
         |--------------------------------------------------------------------------
-        | DELETE RECEIPT FILE
+        | RESET PAYMENT
         |--------------------------------------------------------------------------
         */
 
-        if (!empty($payment['receipt_file']) && preg_match('~\Auploads/receipts/receipt_[0-9]+_[a-zA-Z0-9]+\.(?:jpg|jpeg|png|pdf)\z~D', $payment['receipt_file'])) {
+        $cancelled = $this->atomic(function () use ($paymentId, $payment) {
+            if (!$this->developmentCharge->lockById($payment['development_charge_id'])) { return false; }
+            $current = $this->developmentCharge->getPaymentById($paymentId, true);
+            if (!$current || (int) $current['development_charge_id'] !== (int) $payment['development_charge_id']) { return false; }
+
+            $reset = ['status' => 'Menunggu', 'payment_date' => null, 'receipt_file' => null, 'receipt_number' => null];
+            $expected = $this->expectedChangedRows($current, $reset + ['updated_by' => AuditLog::actorId()]);
+            if ($this->developmentCharge->cancelPayment($paymentId) !== $expected) {
+                throw new RuntimeException('Charge payment cancel failed.');
+            }
+            $this->audit('update', 'development_charge_payment', $paymentId, ['before' => $current, 'after' => array_merge($current, $reset), 'receipt' => false]);
+            return $current;
+        });
+
+        if (!$cancelled) {
+            header('Location: ' . ReportingYear::url('charge?error=payment_not_found'));
+            exit;
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | DELETE RECEIPT FILE
+        |--------------------------------------------------------------------------
+        | Only after commit: a rolled-back cancel still references the receipt.
+        */
+
+        if (!empty($cancelled['receipt_file']) && preg_match('~\Auploads/receipts/receipt_[0-9]+_[a-zA-Z0-9]+\.(?:jpg|jpeg|png|pdf)\z~D', $cancelled['receipt_file'])) {
 
             $filePath =
-                $this->receiptDirectory() . basename($payment['receipt_file']);
+                $this->receiptDirectory() . basename($cancelled['receipt_file']);
 
 
             if (is_file($filePath) && !is_link($filePath)) {
                 unlink($filePath);
             }
         }
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESET PAYMENT
-        |--------------------------------------------------------------------------
-        */
-
-        $this->atomic(function () use ($paymentId, $payment) {
-            $this->developmentCharge->lockById($payment['development_charge_id']);
-            $this->developmentCharge
-            ->cancelPayment(
-                $paymentId
-            );
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | NOTIFICATION
-            |--------------------------------------------------------------------------
-            */
-
-            $this->notification->create([
-            'category' => 'payment',
-            'action' => 'cancelled',
-            'title' => 'Bayaran Caj Dibatalkan',
-
-            'message' =>
-                'Bayaran ansuran bernilai RM ' .
-                number_format(
-                    $payment['amount'],
-                    2
-                ) .
-                ' telah dibatalkan.',
-
-            'entity_type' =>
-                'development_charge_payment',
-
-            'entity_id' =>
-                $paymentId
-            ]);
-
-
-        });
 
         header(
             'Location: ' . ReportingYear::url('charge/payment/' . $payment['development_charge_id'] . '?success=charge_payment_cancelled')
@@ -661,13 +606,14 @@ class ChargeController extends ModuleController
             $charge['payment_plan'] === 'Bayaran Penuh'
             ) {
 
-            $this->developmentCharge
+            $paymentId = $this->developmentCharge
                 ->addPaymentSchedule(
                     $chargeId,
                     1,
                     $charge['charge_amount'],
                     null
                 );
+            $this->audit('create', 'development_charge_payment', $paymentId, ['after' => ['development_charge_id' => $chargeId, 'installment_no' => 1, 'amount' => $charge['charge_amount'], 'due_date' => null, 'status' => 'Menunggu']]);
             }
 
 
@@ -686,13 +632,14 @@ class ChargeController extends ModuleController
 
             for ($i = 1; $i <= 4; $i++) {
 
-                $this->developmentCharge
+                $paymentId = $this->developmentCharge
                     ->addPaymentSchedule(
                         $chargeId,
                         $i,
                         $amount,
                         null
                     );
+                $this->audit('create', 'development_charge_payment', $paymentId, ['after' => ['development_charge_id' => $chargeId, 'installment_no' => $i, 'amount' => $amount, 'due_date' => null, 'status' => 'Menunggu']]);
             }
             }
 

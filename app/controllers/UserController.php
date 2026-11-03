@@ -167,54 +167,16 @@ class UserController extends ModuleController
             return;
         }
 
-        $this->user->create([
-            'department' => $department === '' ? null : $department,
-            'name' =>
-                $name,
-
-            'email' =>
-                $email,
-
-            'password' =>
-                $password,
-
-            'role' =>
-                $role
-        ]);
+        $this->atomic(function () use ($department, $name, $email, $password, $role) {
+            $created = $this->user->create([
+                'department' => $department === '' ? null : $department,
+                'name' => $name, 'email' => $email, 'password' => $password, 'role' => $role
+            ]);
+            if (!$created) { throw new RuntimeException('User insertion failed.'); }
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | NOTIFICATION
-        |--------------------------------------------------------------------------
-        */
-
-        $createdUser = $this->user->getByEmail($email);
-        $this->notification->create([
-            'category' =>
-                'system',
-
-            'action' =>
-                'user_created',
-
-            'title' =>
-                'Pengguna Baru Didaftarkan',
-
-            'message' =>
-                $name .
-                ' telah didaftarkan sebagai ' .
-                (
-                    $role === 'admin'
-                    ? 'Pentadbir.'
-                    : 'Pengguna Biasa.'
-                ),
-
-            'entity_type' =>
-                'user',
-
-            'entity_id' =>
-                $createdUser ? $createdUser['id'] : null
-        ]);
+            $this->audit('create', 'user', $created, ['after' => ['name' => $name, 'email' => $email, 'role' => $role, 'department' => $department === '' ? null : $department, 'password_set' => true]]);
+        });
 
 
         header(
@@ -371,9 +333,8 @@ class UserController extends ModuleController
             return;
         }
 
-        $this->user->updateUser(
-            $id,
-            [
+        $this->atomic(function () use ($id, $department, $name, $email, $password, $role, $existingUser) {
+            if (!$this->user->updateUser($id, [
                 'department' => $department === '' ? null : $department,
                 'name' =>
                     $name,
@@ -386,8 +347,12 @@ class UserController extends ModuleController
 
                 'role' =>
                     $role
-            ]
-        );
+            ])) { throw new RuntimeException('User update failed.'); }
+            $this->audit('update', 'user', $id, [
+                'before' => ['name' => $existingUser['name'], 'email' => $existingUser['email'], 'role' => $existingUser['role'], 'department' => $existingUser['department']],
+                'after' => ['name' => $name, 'email' => $email, 'role' => $role, 'department' => $department === '' ? null : $department, 'password_changed' => $password !== '']
+            ]);
+        });
 
 
         /*
@@ -407,28 +372,6 @@ class UserController extends ModuleController
             $_SESSION['user_email'] =
                 $email;
         }
-
-
-        $this->notification->create([
-            'category' =>
-                'system',
-
-            'action' =>
-                'user_updated',
-
-            'title' =>
-                'Maklumat Pengguna Dikemaskini',
-
-            'message' =>
-                $name .
-                ' telah dikemaskini.',
-
-            'entity_type' =>
-                'user',
-
-            'entity_id' =>
-                $id
-        ]);
 
 
         header(
@@ -495,30 +438,31 @@ class UserController extends ModuleController
         }
 
 
-        $this->notification->create([
-            'category' =>
-                'system',
+        $deleted = $this->atomic(function () use ($id) {
+            // Locked snapshot (no password columns). Read receipts would cascade, so delete and audit them explicitly.
+            $user = $this->user->getById($id, true);
+            if (!$user) { return false; }
+            $reads = $this->notification->getReadsForUser($id, true);
 
-            'action' =>
-                'user_deleted',
+            if ($this->notification->deleteReadsByIds(array_column($reads, 'id')) !== count($reads)) {
+                throw new RuntimeException('User notification read delete count mismatch.');
+            }
+            if ($this->user->deleteUser($id) !== 1) { throw new RuntimeException('User delete failed.'); }
 
-            'title' =>
-                'Pengguna Dipadam',
+            foreach ($reads as $read) {
+                $this->audit('delete', 'notification_read', $read['id'], ['before' => $read, 'reason' => 'user_deleted']);
+            }
+            $this->audit('delete', 'user', $id, ['before' => [
+                'id' => $user['id'], 'name' => $user['name'], 'email' => $user['email'],
+                'role' => $user['role'], 'department' => $user['department']
+            ]]);
+            return true;
+        });
 
-            'message' =>
-                $user['name'] .
-                ' telah dipadam daripada sistem.',
-
-            'entity_type' =>
-                'user',
-
-            'entity_id' =>
-                $id
-        ]);
-
-
-        $this->user
-            ->deleteUser($id);
+        if (!$deleted) {
+            header('Location: ' . ReportingYear::url('user?error=user_not_found'));
+            exit;
+        }
 
 
         header(

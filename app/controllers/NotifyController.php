@@ -94,7 +94,16 @@ class NotifyController extends ModuleController
             exit;
         }
 
-        $this->atomic(function () { $this->notification->clearAll(); });
+        $this->atomic(function () {
+            // clearAll() locks, deletes and count-checks the captured rows; audit from those snapshots afterwards.
+            $cleared = $this->notification->clearAll();
+            foreach ($cleared['notifications'] as $notification) {
+                $this->audit('delete', 'notification', $notification['id'], ['before' => $notification, 'scope' => 'all']);
+            }
+            foreach ($cleared['reads'] as $read) {
+                $this->audit('delete', 'notification_read', $read['id'], ['before' => $read, 'scope' => 'all']);
+            }
+        });
 
         header(
             'Location: ' . ReportingYear::url('notification?success=notifications_cleared')
@@ -106,7 +115,7 @@ class NotifyController extends ModuleController
     {
         $fallback = 'notification';
         $id = isset($notification['entity_id']) ? (int) $notification['entity_id'] : 0;
-        if ($id <= 0 || in_array($notification['action'], ['deleted', 'user_deleted'], true)) {
+        if ($id <= 0 || strpos($notification['action'], 'delete') === 0) {
             return $fallback;
         }
         $type = isset($notification['entity_type']) ? $notification['entity_type'] : '';
@@ -128,6 +137,13 @@ class NotifyController extends ModuleController
                 $id = (int) $schedule['project_id'];
             }
             return $this->project->getById($id) ? 'project/finance/' . $id : $fallback;
+        }
+        if ($type === 'project_expense' || $type === 'project_variation') {
+            $this->loadModel('Project');
+            $record = $type === 'project_expense'
+                ? $this->project->getExpenseById($id)
+                : $this->project->getVariationById($id);
+            return $record ? 'project/finance/' . $record['project_id'] : $fallback;
         }
         if ($type === 'user' && $_SESSION['user_role'] === 'admin') {
             $this->loadModel('User');

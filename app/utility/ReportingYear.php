@@ -1,6 +1,5 @@
 <?php
 
-/** Navigation/record context only; never derives a cash receipt or project start year. */
 class ReportingYear
 {
     public static function valid($value)

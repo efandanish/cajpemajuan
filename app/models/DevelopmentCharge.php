@@ -158,7 +158,9 @@ class DevelopmentCharge extends Model
             charge_amount,
             osc_decision,
             payment_plan,
-            record_year
+            record_year,
+            created_by,
+            updated_by
         )
         VALUES (
             :developer_name,
@@ -170,7 +172,9 @@ class DevelopmentCharge extends Model
             :charge_amount,
             :osc_decision,
             :payment_plan,
-            :record_year
+            :record_year,
+            :created_by,
+            :updated_by
         )
     ";
 
@@ -224,6 +228,8 @@ class DevelopmentCharge extends Model
         $recordYear = isset($data['record_year']) ? $data['record_year'] : null;
         if ($recordYear !== null && !ReportingYear::valid($recordYear)) { throw new InvalidArgumentException('Tahun rekod tidak sah.'); }
         $database->bindValue(':record_year', $recordYear);
+        $database->bindValue(':created_by', AuditLog::actorId());
+        $database->bindValue(':updated_by', AuditLog::actorId());
         $database->execute();
 
         if ($database->countRows() !== 1) {
@@ -272,7 +278,8 @@ class DevelopmentCharge extends Model
             file_number = :file_number,
             charge_amount = :charge_amount,
             osc_decision = :osc_decision,
-            payment_plan = :payment_plan
+            payment_plan = :payment_plan,
+            updated_by = :updated_by
         WHERE id = :id
     ";
 
@@ -322,6 +329,7 @@ class DevelopmentCharge extends Model
             ':payment_plan',
             $data['payment_plan']
         );
+        $database->bindValue(':updated_by', AuditLog::actorId());
 
         $database->bindValue(
             ':id',
@@ -348,7 +356,11 @@ class DevelopmentCharge extends Model
             $id
         );
 
-        return $database->execute();
+        if (!$database->execute()) {
+            return 0;
+        }
+
+        return (int) $database->countRows();
     }
 
     public function addPaymentSchedule(
@@ -365,14 +377,18 @@ class DevelopmentCharge extends Model
             installment_no,
             amount,
             due_date,
-            status
+            status,
+            created_by,
+            updated_by
         )
         VALUES (
             :development_charge_id,
             :installment_no,
             :amount,
             :due_date,
-            'Menunggu'
+            'Menunggu',
+            :created_by,
+            :updated_by
         )
     ");
 
@@ -395,11 +411,15 @@ class DevelopmentCharge extends Model
             ':due_date',
             $dueDate
         );
+        $database->bindValue(':created_by', AuditLog::actorId());
+        $database->bindValue(':updated_by', AuditLog::actorId());
 
-        return $database->execute();
+        $database->execute();
+        return $database->lastInsertId();
     }
 
-    public function getPayments($chargeId)
+    // $lock = true reads the latest committed rows and holds them until the transaction ends.
+    public function getPayments($chargeId, $lock = false)
     {
         $database = Database::openConnection();
 
@@ -408,7 +428,7 @@ class DevelopmentCharge extends Model
         FROM development_charge_payments
         WHERE development_charge_id = :charge_id
         ORDER BY installment_no ASC
-    ");
+    " . ($lock ? ' FOR UPDATE' : ''));
 
         $database->bindValue(
             ':charge_id',
@@ -447,7 +467,7 @@ class DevelopmentCharge extends Model
             : 0;
     }
 
-    public function getPaymentById($paymentId)
+    public function getPaymentById($paymentId, $lock = false)
     {
         $database = Database::openConnection();
 
@@ -456,7 +476,7 @@ class DevelopmentCharge extends Model
         FROM development_charge_payments
         WHERE id = :id
         LIMIT 1
-    ");
+    " . ($lock ? ' FOR UPDATE' : ''));
 
         $database->bindValue(
             ':id',
@@ -482,7 +502,8 @@ class DevelopmentCharge extends Model
             status = 'Dibayar',
             payment_date = :payment_date,
             receipt_file = :receipt_file,
-            receipt_number = :receipt_number
+            receipt_number = :receipt_number,
+            updated_by = :updated_by
 
         WHERE id = :id
     ");
@@ -503,6 +524,7 @@ class DevelopmentCharge extends Model
         );
 
         $database->bindValue(':receipt_number', $receiptNumber);
+        $database->bindValue(':updated_by', AuditLog::actorId());
         return $database->execute();
     }
     public function cancelPayment($paymentId)
@@ -516,7 +538,8 @@ class DevelopmentCharge extends Model
             status = 'Menunggu',
             payment_date = NULL,
             receipt_file = NULL,
-            receipt_number = NULL
+            receipt_number = NULL,
+            updated_by = :updated_by
 
         WHERE id = :id
     ");
@@ -525,8 +548,14 @@ class DevelopmentCharge extends Model
             ':id',
             $paymentId
         );
+        $database->bindValue(':updated_by', AuditLog::actorId());
 
-        return $database->execute();
+        if (!$database->execute()) {
+            return 0;
+        }
+
+        // Changed rows: an UPDATE that rewrites identical values reports 0.
+        return (int) $database->countRows();
     }
     public function getPendingPaymentsWithDueDate()
     {
@@ -574,7 +603,8 @@ class DevelopmentCharge extends Model
 
         SET
             amount = :amount,
-            due_date = :due_date
+            due_date = :due_date,
+            updated_by = :updated_by
 
         WHERE id = :id
         AND development_charge_id = :charge_id
@@ -600,6 +630,7 @@ class DevelopmentCharge extends Model
             ':charge_id',
             $chargeId
         );
+        $database->bindValue(':updated_by', AuditLog::actorId());
 
         return $database->execute();
     }
@@ -642,6 +673,10 @@ class DevelopmentCharge extends Model
             $chargeId
         );
 
-        return $database->execute();
+        if (!$database->execute()) {
+            return 0;
+        }
+
+        return (int) $database->countRows();
     }
 }

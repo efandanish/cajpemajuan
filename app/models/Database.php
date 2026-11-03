@@ -223,6 +223,10 @@ class Database {
         $this->connection->beginTransaction();
     }
 
+    public function inTransaction() {
+        return $this->connection->inTransaction();
+    }
+
     /**
      * Commit a transaction. This method will be called after beginTransaction()
      *

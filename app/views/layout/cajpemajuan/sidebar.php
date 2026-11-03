@@ -35,6 +35,7 @@
 <a href="<?= PUBLIC_ROOT ?>project<?= ReportingYear::suffix() ?>" title="Projek Pembangunan" class="sidebar-link <?= in_array($activeModule, ['projectcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#buildings"></use></svg></span><span>Projek Pembangunan</span></a>
 <?php if ($_SESSION['user_role'] === 'admin'): ?><div class="sidebar-divider"></div><div class="sidebar-section-title">PENTADBIRAN</div>
 <a href="<?= PUBLIC_ROOT ?>user<?= ReportingYear::suffix() ?>" title="Pengurusan Pengguna" class="sidebar-link <?= in_array($activeModule, ['usercontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#people"></use></svg></span><span>Pengurusan Pengguna</span></a>
+<a href="<?= PUBLIC_ROOT ?>audit<?= ReportingYear::suffix() ?>" title="Log Audit" class="sidebar-link <?= in_array($activeModule, ['auditcontroller'], true) ? 'active' : '' ?>"><span class="sidebar-icon"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="<?= PUBLIC_ROOT ?>img/ui-icons.svg#bell"></use></svg></span><span>Log Audit</span></a>
 <?php endif; ?>
 </nav>
 

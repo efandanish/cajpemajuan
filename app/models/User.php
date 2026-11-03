@@ -24,10 +24,11 @@ class User extends Model
     }
 
 
-    public function getById($id)
+    public function getById($id, $lock = false)
     {
         $database = Database::openConnection();
 
+        // Password hashes are never selected, so locked snapshots are safe to audit.
         $database->prepare("
             SELECT
                 id,
@@ -35,12 +36,14 @@ class User extends Model
                 email,
                 role,
                 department,
+                created_by,
+                updated_by,
                 created_at,
                 updated_at
             FROM users
             WHERE id = :id
             LIMIT 1
-        ");
+        " . ($lock ? ' FOR UPDATE' : ''));
 
         $database->bindValue(
             ':id',
@@ -76,14 +79,18 @@ class User extends Model
                 email,
                 password,
                 role,
-                department
+                department,
+                created_by,
+                updated_by
             )
             VALUES (
                 :name,
                 :email,
                 :password,
                 :role,
-                :department
+                :department,
+                :created_by,
+                :updated_by
             )
         ");
 
@@ -108,7 +115,10 @@ class User extends Model
         );
 
         $database->bindValue(':department', isset($data['department']) ? $data['department'] : null);
-        return $database->execute();
+        $database->bindValue(':created_by', AuditLog::actorId());
+        $database->bindValue(':updated_by', AuditLog::actorId());
+        $database->execute();
+        return $database->lastInsertId();
     }
 
 
@@ -130,6 +140,8 @@ class User extends Model
             email,
             role,
             department,
+            created_by,
+            updated_by,
             created_at,
             updated_at
         FROM users
@@ -203,7 +215,8 @@ class User extends Model
                 email = :email,
                 password = :password,
                 role = :role,
-                department = :department
+                department = :department,
+                updated_by = :updated_by
             WHERE id = :id
         ");
 
@@ -226,7 +239,8 @@ class User extends Model
                 name = :name,
                 email = :email,
                 role = :role,
-                department = :department
+                department = :department,
+                updated_by = :updated_by
             WHERE id = :id
         ");
         }
@@ -248,6 +262,7 @@ class User extends Model
         );
 
         $database->bindValue(':department', $department);
+        $database->bindValue(':updated_by', AuditLog::actorId());
 
         $database->bindValue(
             ':id',
@@ -272,6 +287,10 @@ class User extends Model
             $id
         );
 
-        return $database->execute();
+        if (!$database->execute()) {
+            return 0;
+        }
+
+        return (int) $database->countRows();
     }
 }

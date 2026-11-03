@@ -49,6 +49,9 @@ class ChargeValidation
                 $errors[] = ($key === 'osc_decision' ? 'Keputusan OSC' : 'Pelan Bayaran') . ' tidak sah.';
             }
         }
+        if (!$existing && $data['payment_plan'] === '4 Ansuran') {
+            $errors[] = 'Pelan 4 Ansuran tidak tersedia untuk caj baharu.';
+        }
         $paid = array_filter($payments, function ($p) { return $p['status'] === 'Dibayar'; });
         $changedPlan = $existing && $data['payment_plan'] !== $existing['payment_plan'];
         if ($paid && $changedPlan) {

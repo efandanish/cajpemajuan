@@ -75,11 +75,7 @@ class ProjectController extends ModuleController
                 $projectId = $this->project->create($data);
                 if (!$projectId) { throw new RuntimeException('Project insertion failed.'); }
                 $this->saveSchedules($projectId);
-                $this->notification->create([
-                    'category' => 'project', 'action' => 'created', 'title' => 'Projek Baru',
-                    'message' => mb_substr($data['project_id'] . ' - ' . $data['project_name'] . ' telah didaftarkan.', 0, 255),
-                    'entity_type' => 'project', 'entity_id' => $projectId
-                ]);
+                $this->audit('create', 'project', $projectId, ['after' => $data]);
                 return $projectId;
             });
         } catch (PDOException $error) {
@@ -248,51 +244,32 @@ class ProjectController extends ModuleController
 
 
         try {
-            $this->atomic(function () use ($id, $data, $changes) {
-                $this->project->lockById($id);
-        $this->project->update(
+            $this->atomic(function () use ($id, $data, $changes, $oldProject) {
+                if (!$this->project->lockById($id)) { throw new RuntimeException('Project not found or not accessible.'); }
+        if (!$this->project->update(
             $id,
             $data
-        );
+        )) { throw new RuntimeException('Project update failed.'); }
 
 
         if ($this->projectSchedulesChanged($id)) {
-            $existing = $this->project->getSchedules($id);
-            $linkedExpenses = array_filter($this->project->getExpenses($id), function ($expense) { return !empty($expense['schedule_id']); });
+            $existing = $this->project->getSchedules($id, true);
+            $linkedExpenses = array_filter($this->project->getExpenses($id, true), function ($expense) { return !empty($expense['schedule_id']); });
             foreach ($existing as $schedule) {
                 if ($schedule['status'] === 'Dibayar' || $linkedExpenses) {
                     throw new DomainException('Jadual dengan rekod bayaran tidak boleh diganti.');
                 }
             }
-            $this->project->deleteSchedules($id);
+            if ($this->project->deleteSchedules($id) !== count($existing)) {
+                throw new RuntimeException('Project schedule replace count mismatch.');
+            }
+            foreach ($existing as $schedule) {
+                $this->audit('delete', 'project_payment_schedule', $schedule['id'], ['before' => $schedule, 'reason' => 'schedule_replaced']);
+            }
             $this->saveSchedules($id);
         }
 
-        if (!empty($changes)) {
-
-            $this->notification->create([
-                'category' => 'project',
-
-                'action' => 'updated',
-
-                'title' =>
-                    'Projek Dikemaskini',
-
-                'message' =>
-                    $data['project_id'] .
-                    ' - ' .
-                    $data['project_name'] .
-                    ' dikemaskini: ' .
-                    implode(', ', $changes) .
-                    '.',
-
-                'entity_type' =>
-                    'project',
-
-                'entity_id' =>
-                    $id
-            ]);
-        }
+        $this->audit('update', 'project', $id, ['before' => $oldProject, 'after' => $data, 'changes' => $changes]);
 
             });
         } catch (DomainException $error) {
@@ -322,30 +299,32 @@ class ProjectController extends ModuleController
             exit;
         }
 
-        $this->atomic(function () use ($id, $project) {
-            $this->project->lockById($id);
+        $this->atomic(function () use ($id) {
+            // Fresh locked snapshots: children are removed by ON DELETE CASCADE, so capture them first.
+            $project = $this->project->lockById($id);
+            if (!$project) { return false; }
+            $schedules = $this->project->getSchedules($id, true);
+            $expenses = $this->project->getExpenses($id, true);
+            $variations = $this->project->getVariations($id, true);
+            // The project row is gone when children are audited; target them by the captured Jabatan.
+            $department = Departments::valid($project['department']) ? $project['department'] : null;
 
-            $this->notification->create([
-            'category' => 'project',
+            if ($this->project->delete($id) !== 1) { throw new RuntimeException('Project delete failed.'); }
 
-            'action' => 'deleted',
-
-            'title' => 'Projek Dipadam',
-
-            'message' =>
-                $project['project_id'] .
-                ' - ' .
-                $project['project_name'] .
-                ' telah dipadam.',
-
-            'entity_type' => 'project',
-
-            'entity_id' => $id
-            ]);
-            $this->project->delete($id);
-
+            foreach ($schedules as $schedule) {
+                $this->audit('delete', 'project_payment_schedule', $schedule['id'], ['before' => $schedule, 'reason' => 'project_deleted', 'department' => $department]);
+            }
+            foreach ($expenses as $expense) {
+                $this->audit('delete', 'project_expense', $expense['id'], ['before' => $expense, 'reason' => 'project_deleted', 'department' => $department]);
+            }
+            foreach ($variations as $variation) {
+                $this->audit('delete', 'project_variation', $variation['id'], ['before' => $variation, 'reason' => 'project_deleted', 'department' => $department]);
+            }
+            $this->audit('delete', 'project', $id, ['before' => $project]);
+            return true;
         });
 
+        // Already deleted or no longer accessible: same redirect as the not-found check above.
         header('Location: ' . ReportingYear::url('project'));
         exit;
     }
@@ -480,7 +459,7 @@ class ProjectController extends ModuleController
             $submitted[] = [$date, number_format((float) $_POST['schedule_amount'][$index], 2, '.', ''), $_POST['schedule_type'][$index]];
         }
         $existing = [];
-        foreach ($this->project->getSchedules($id) as $row) { $existing[] = [$row['claim_date'], $row['amount'], $row['type']]; }
+        foreach ($this->project->getSchedules($id, true) as $row) { $existing[] = [$row['claim_date'], $row['amount'], $row['type']]; }
         return $submitted !== $existing;
     }
 
@@ -514,12 +493,13 @@ class ProjectController extends ModuleController
                 continue;
             }
 
-            $this->project->addSchedule(
+            $scheduleId = $this->project->addSchedule(
                 $projectId,
                 $date,
                 $amount,
                 $type
             );
+            $this->audit('create', 'project_payment_schedule', $scheduleId, ['after' => ['project_id' => $projectId, 'claim_date' => $date, 'amount' => $amount, 'type' => $type]]);
         }
     }
     public function recordPayment($scheduleId)
@@ -565,7 +545,7 @@ class ProjectController extends ModuleController
             $this->project->lockById($schedule['project_id']);
             $current = $this->project->getScheduleById($scheduleId);
             if (!$current || $current['status'] !== 'Menunggu') { throw new DomainException('Jadual telah dibayar atau dipadam.'); }
-            $this->project->addExpense(
+            $expenseId = $this->project->addExpense(
             $schedule['project_id'],
             $scheduleId,
             $amount,
@@ -576,6 +556,8 @@ class ProjectController extends ModuleController
             $this->project->markSchedulePaid(
             $scheduleId
             );
+            $this->audit('create', 'project_expense', $expenseId, ['after' => ['project_id' => $schedule['project_id'], 'schedule_id' => $scheduleId, 'amount' => $amount, 'payment_date' => $paymentDate, 'description' => $description]]);
+            $this->audit('update', 'project_payment_schedule', $scheduleId, ['before' => $current, 'after' => array_merge($current, ['status' => 'Dibayar'])]);
 
         });
 
@@ -603,17 +585,33 @@ class ProjectController extends ModuleController
             exit;
         }
 
-        $scheduleId = $expense['schedule_id'];
+        $cancelled = $this->atomic(function () use ($expenseId, $expense) {
+            if (!$this->project->lockById($expense['project_id'])) { return false; }
+            $current = $this->project->getExpenseById($expenseId, true);
+            if (!$current) { return false; }
+            $scheduleId = $current['schedule_id'];
 
-        $this->atomic(function () use ($expenseId, $scheduleId, $expense) {
-            $this->project->lockById($expense['project_id']);
-            $this->project->deleteExpense($expenseId);
+            if ($this->project->deleteExpense($expenseId) !== 1) { throw new RuntimeException('Project expense delete failed.'); }
+            $this->audit('delete', 'project_expense', $expenseId, ['before' => $current]);
 
-            if (!empty($scheduleId) && !$this->project->scheduleHasExpenses($scheduleId)) {
-            $this->project->markSchedulePending($scheduleId);
+            if (!empty($scheduleId) && !$this->project->scheduleHasExpenses($scheduleId, true)) {
+            // The expense referenced this schedule, so it must still exist and be accessible.
+            $before = $this->project->getScheduleById($scheduleId, true);
+            if (!$before) { throw new RuntimeException('Linked project schedule not found.'); }
+            $expected = $this->expectedChangedRows($before, ['status' => 'Menunggu', 'updated_by' => AuditLog::actorId()]);
+            if ($this->project->markSchedulePending($scheduleId) !== $expected) {
+                throw new RuntimeException('Project schedule reset failed.');
             }
-
+            $schedule = $this->project->getScheduleById($scheduleId, true);
+            $this->audit('update', 'project_payment_schedule', $scheduleId, ['before' => $before, 'after' => $schedule]);
+            }
+            return true;
         });
+
+        if (!$cancelled) {
+            header('Location: ' . ReportingYear::url('project?error=expense_not_found'));
+            exit;
+        }
 
         header('Location: ' . ReportingYear::url('project/finance/' . $expense['project_id'] . '?success=payment_cancelled'));
         exit;
@@ -650,12 +648,10 @@ class ProjectController extends ModuleController
             exit;
         }
 
-        $this->project->addSchedule(
-            $projectId,
-            $date,
-            $amount,
-            $type
-        );
+        $this->atomic(function () use ($projectId, $date, $amount, $type) {
+            $scheduleId = $this->project->addSchedule($projectId, $date, $amount, $type);
+            $this->audit('create', 'project_payment_schedule', $scheduleId, ['after' => ['project_id' => $projectId, 'claim_date' => $date, 'amount' => $amount, 'type' => $type]]);
+        });
 
         header('Location: ' . ReportingYear::url('project/finance/' . $project['id'] . '?success=schedule_added'));
         exit;
@@ -691,13 +687,10 @@ class ProjectController extends ModuleController
             exit;
         }
 
-        $this->project->addExpense(
-            $projectId,
-            null,
-            $amount,
-            $paymentDate,
-            $description
-        );
+        $this->atomic(function () use ($projectId, $amount, $paymentDate, $description) {
+            $expenseId = $this->project->addExpense($projectId, null, $amount, $paymentDate, $description);
+            $this->audit('create', 'project_expense', $expenseId, ['after' => ['project_id' => $projectId, 'amount' => $amount, 'payment_date' => $paymentDate, 'description' => $description]]);
+        });
 
         header('Location: ' . ReportingYear::url('project/finance/' . $project['id'] . '?success=manual_expense_added'));
         exit;
@@ -742,13 +735,10 @@ class ProjectController extends ModuleController
             exit;
         }
 
-        $this->project->addVariation(
-            $projectId,
-            $description,
-            $type,
-            $amount,
-            $date
-        );
+        $this->atomic(function () use ($projectId, $description, $type, $amount, $date) {
+            $variationId = $this->project->addVariation($projectId, $description, $type, $amount, $date);
+            $this->audit('create', 'project_variation', $variationId, ['after' => ['project_id' => $projectId, 'description' => $description, 'variation_type' => $type, 'amount' => $amount, 'variation_date' => $date]]);
+        });
 
         header('Location: ' . ReportingYear::url('project/finance/' . $project['id'] . '?success=variation_added'));
         exit;
@@ -775,10 +765,11 @@ class ProjectController extends ModuleController
         }
 
         $deleted = $this->atomic(function () use ($schedule, $scheduleId) {
-            $this->project->lockById($schedule['project_id']);
-            $current = $this->project->getScheduleById($scheduleId);
-            if (!$current || $current['status'] === 'Dibayar' || $this->project->scheduleHasExpenses($scheduleId)) { return false; }
-            $this->project->deleteSchedule($scheduleId);
+            if (!$this->project->lockById($schedule['project_id'])) { return false; }
+            $current = $this->project->getScheduleById($scheduleId, true);
+            if (!$current || $current['status'] === 'Dibayar' || $this->project->scheduleHasExpenses($scheduleId, true)) { return false; }
+            if ($this->project->deleteSchedule($scheduleId) !== 1) { throw new RuntimeException('Project schedule delete failed.'); }
+            $this->audit('delete', 'project_payment_schedule', $scheduleId, ['before' => $current]);
             return true;
         });
         if (!$deleted) {

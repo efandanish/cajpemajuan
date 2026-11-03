@@ -1,95 +1,74 @@
 # Sistem Akaun Caj Pemajuan
 
-MiniPHP application for user/department management, the financial dashboard, Projek Pembangunan, Caj Pemajuan, installment schedules, payments/receipts, notifications and historical-year reports.
+Web application for Projek Pembangunan, Caj Pemajuan, installment payments and receipts, department notifications, the Audit Log and yearly reports.
 
 ## Requirements
 
-- PHP **7.4 through 8.2**; verified runtimes are **7.4.33** and **8.2.5**. PHP 8.3+ is rejected by startup. Verify both CLI and web-server versions. `.php-version` retains the existing 7.4.33 fallback; it does not switch Apache.
-- PDO/pdo_mysql, mbstring, GD with FreeType/JPEG/PNG, OpenSSL, fileinfo and sessions; MariaDB **10.4** (verified 10.4.27).
-- Composer 2 using a supported PHP interpreter, with PHP zip support or an available unzip/7z command for extracting package archives. `vendor/` is installed from the lockfile and is not shipped in this application-only tree. The lockfile resolves for PHP 7.4.33 to retain fallback compatibility; `check-platform-reqs` verifies your actual runtime.
-- Apache with mod_rewrite and AllowOverride All. PHP's built-in server below is for local development only.
-- Browser access to the CDNs used for Bootstrap, Bootstrap Icons and SweetAlert.
+- XAMPP with **PHP 8.2** (verified 8.2.4; PHP 7.4–8.2 supported, 8.3+ refused at startup) and **MariaDB 10.4** (verified 10.4.27).
+- PHP extensions: pdo_mysql, mbstring, gd, openssl, fileinfo (all enabled in XAMPP).
+- Apache with `mod_rewrite` and `AllowOverride All`.
+- Browser access to the Bootstrap, Bootstrap Icons and SweetAlert CDNs.
 
-## Fresh installation
+PHP libraries are already included in `vendor/` (installed from `composer.lock`). Composer is only needed to reinstall them: `composer install --no-dev`.
 
-1. Clone the repository and run from its root with the intended PHP interpreter:
+### PHP 8.2 in XAMPP (required environment fix)
+
+Some XAMPP builds ship a `php.ini` containing `track_errors=On`. PHP 8 removed this directive, so PHP 8.2 refuses to start (*"Directive 'track_errors' is no longer available in PHP"*), both on the command line and in Apache. Before using PHP 8.2:
+
+1. Stop Apache and back up `php.ini` (`xamppfiles/etc/php.ini` on macOS, `xampp\php\php.ini` on Windows).
+2. Comment out the line: `track_errors=On` → `; track_errors=On`. Nothing else changes; PHP 7.4 also starts with this edit.
+3. Make sure Apache loads the PHP 8.2 module. On XAMPP for macOS builds that include both versions, `etc/extra/httpd-xampp.conf` must load `LoadModule php_module modules/libphp.so` instead of `php7_module modules/libphp7.so`; Windows XAMPP 8.2 installers load PHP 8.2 already.
+4. Start Apache and confirm with `php -v` and `php scripts/check-setup.php` (the first line reports the running version).
+
+## Installation (new server)
+
+Run the commands from the application folder, using the same PHP that Apache uses (XAMPP: `xampp/php/php` on Windows, `/Applications/XAMPP/xamppfiles/bin/php` on macOS).
+
+1. **Copy** this folder into XAMPP `htdocs`, e.g. `htdocs/cajpemajuan`.
+
+2. **Configuration.** Generate the private configuration (security keys are created automatically and never shown):
 
    ```sh
-   php -v
-   composer install --no-dev --prefer-dist --no-interaction
-   composer check-platform-reqs --no-dev
+   php scripts/init-config.php
    ```
 
-   Do not use `--ignore-platform-reqs`. Keep `composer.json` and `composer.lock` together.
+   Then edit `app/config/local.php` and set `DB_HOST`, `DB_NAME`, `DB_USER` and `DB_PASS`. Keep this file private. On an existing installation, do not run this step: keep the existing keys.
 
-2. Copy the configuration template, then generate private local keys WITHOUT printing them:
-
-   ```sh
-   cp app/config/config.example.php app/config/config.php
-   php -r '$p="app/config/local.php"; if (file_exists($p)) { fwrite(STDERR,"Local configuration already exists; preserve it.\n"); exit(1); } $c=require "app/config/local.example.php"; foreach (["COOKIE_SECRET_KEY","ENCRYPTION_KEY","HASH_KEY"] as $k) { $c[$k]=bin2hex(random_bytes(32)); } umask(0077); if (file_put_contents($p,"<?php\nreturn ".var_export($c,true).";\n")===false) { exit(1); }'
-   ```
-
-   Edit the ignored `app/config/local.php` privately with your DB_HOST, DB_NAME, DB_USER and DB_PASS. Use a dedicated database account; do not publish this file or reuse another deployment's keys. SMTP settings can be overridden here if email is configured. Existing installations must preserve their private keys and configuration instead of rerunning initialization. Keep private configuration readable only by the owner and the intended web runtime account; do not solve permissions with world-readable secrets.
-
-3. Create an EMPTY database and import the NEW sanitized export:
+3. **Database.** Create a new, empty database (utf8mb4) and import `database/caj_pemajuan_clean.sql` once, using phpMyAdmin (Import tab) or:
 
    ```sh
    mysql -u DB_USER -p -e "CREATE DATABASE caj_pemajuan CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
-   mysql --default-character-set=utf8mb4 -u DB_USER -p caj_pemajuan < database/caj_pemajuan.sanitized.sql
+   mysql --default-character-set=utf8mb4 -u DB_USER -p caj_pemajuan < database/caj_pemajuan_clean.sql
    ```
 
-   Replace DB_USER and the database name to match local configuration. The export includes all nine application tables, keys, constraints and current migration columns. It contains **no accounts, password hashes, financial records or receipts**. Reference choices are enums/application constants, so no seed rows are needed. `database/schema.sql` is the equivalent structure-only alternative: import **one** of these files, not both. Fresh installations must NOT run the additive migrations afterward. Never import either file over an existing client database.
+   The file contains the complete structure (10 tables) and no data. It already includes every migration in `database/migrations/`: **do not run the migrations on a new installation.** It stops with an error if the tables already exist, so it cannot overwrite an existing database.
 
-4. Create the first administrator in a private local terminal:
+4. **First administrator.** There are no default accounts. Create the first (global) administrator:
 
    ```sh
-   php scripts/create-admin.php administrator@example.test "Local Administrator"
+   php scripts/create-admin.php admin@your-domain.gov.my "Nama Pentadbir"
    ```
 
-   Substitute your own administrator email/name. The command generates a unique password and displays it once. Store it securely; do not capture the output in logs, commit it or share it. There are no default login credentials. Use the application's user management to create other accounts and assign departments.
+   A random password is generated and shown once. Store it securely, log in and change it under Pengguna. A global administrator has no Jabatan and sees every department, all Caj Pemajuan activity and the full Audit Log. Create other users and assign their Jabatan in the application.
 
-5. Ensure the web-server account can write `app/logs`, `app/uploads`, `app/backups` and `public/uploads/receipts`; these empty directories are included with placeholder files. Configure uploads for at least 5 MB and post requests for at least 8 MB. Keep errors logged with `E_ALL`; remove obsolete `track_errors` from a PHP 8 INI. Do not replace a PHP runtime or Apache module by copying binaries from a different OS/architecture.
+5. **Writable folders.** The web server must be able to write `app/logs`, `app/uploads` and `public/uploads/receipts`. Set PHP `upload_max_filesize` ≥ 5M and `post_max_size` ≥ 8M.
 
-6. Check configuration:
+6. **Check** the installation, then open `http://localhost/cajpemajuan/`:
 
    ```sh
    php scripts/check-setup.php
-   # Exact-version check when using the requested upgrade runtime:
-   php scripts/check-setup.php --target-php825
    ```
 
-7. Serve the application:
+## Upgrading an existing database
 
-   - XAMPP: place under `htdocs`, enable the rewrite/override settings and visit `http://localhost/<folder>/`. Root and public `.htaccess` files are both required.
-   - Apache vhost: point DocumentRoot to `public/` and enable its `.htaccess` rules.
-   - Local development only:
+Never import the clean SQL over a client database. Back up the database and `public/uploads/receipts`, then follow `database/migrations/README.md` to apply only the missing migrations.
 
-     ```sh
-     php -S 127.0.0.1:8080 -t public scripts/router.php
-     ```
+## Troubleshooting
 
-     Visit `http://127.0.0.1:8080/`. Selecting a terminal PHP binary does not change XAMPP's active PHP handler.
+- *"Directive 'track_errors' is no longer available"*: see "PHP 8.2 in XAMPP" above.
+- Login fails: check the database settings in `app/config/local.php` and that an administrator exists.
+- Page not found on every link: enable `mod_rewrite` and `AllowOverride All`; both `.htaccess` files (root and `public/`) are required.
+- Blank or error page: check `app/logs/log.txt` and the Apache/PHP error log.
+- Receipt upload fails: check upload limits and that `public/uploads/receipts` is writable.
 
-## Existing database upgrades
-
-Keep the existing records, private configuration and receipts. Follow [database/migrations/README.md](database/migrations/README.md) to inspect and apply only missing migrations after a private backup and disposable restore rehearsal. There is no automatic startup migration. Do not execute every migration blindly or use the fresh installation export as an upgrade script.
-
-## Included behavior
-
-- Admin and ordinary-user authentication, session/CSRF protections, department-aware user management and permissions. Ordinary users can create charge/project records; saved financial corrections and payment mutations require admin access.
-- Separate assessed charges, actual collections and payment-year expenditure on the dashboard (F-01). Opening/closing balances remain explicitly unverified/unavailable until the required accounting policy exists.
-- Project schedules, expenses, variations, payment recording/cancellation, charge installment payments, validated receipt numbers/dates/uploads and history protections.
-- Automatic new three-installment principal/deadline calculations and exact-cent reconciliation on saved financial edits (F-02). An inconsistent edit is rejected atomically; paid history is protected. Interest remains reference-only, not an automatically posted obligation.
-- Department notifications, bell/history access controls and reminder deduplication. Reminders are generated through dashboard access; no unattended scheduler or individual PIC assignment is included.
-- Explicit historical charge years, year navigation/reports and undated project handling.
-- PHP 8.2 compatibility for controller properties, nullable strings and the CAPTCHA adapter.
-
-## Troubleshooting and verification
-
-For a fresh disposable installation, log in as admin; create a user and project, create a charge, inspect the calculated installments, record/cancel a payment with a test receipt, compare dashboard assessed/collected/spent totals, review department notifications, historical-year lists and logout. Repeat relevant access checks with an ordinary user. Never create these verification records in client data.
-
-If login fails, verify DB settings and create the local administrator. For missing routes, check mod_rewrite, AllowOverride and the document root. For a blank/error page, check PHP version/extensions, Composer installation, `app/logs/log.txt` and the web-server error log. Receipt failures usually require reviewing upload limits and directory ownership. Real SMTP delivery needs separately configured credentials.
-
-The application source retains the client-feedback implementation and PHP 8.2.5 compatibility. Reports, automated tests, Docker tools, private exports/configuration and receipts are excluded from this application-only tree. Excluding them from the current tree **does not clean existing Git history**; repository-owner coordination is required before any claim of historical sanitization or publication of cleaned ancestry.
-
-Built on miniPHP; retain [LICENSE](LICENSE). Third-party dependencies retain their licenses when Composer installs them.
+Built on miniPHP (see `LICENSE`). Third-party libraries in `vendor/` keep their own licenses.
