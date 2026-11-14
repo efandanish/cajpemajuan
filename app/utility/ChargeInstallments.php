@@ -20,16 +20,12 @@ class ChargeInstallments
     public static function principal($amount)
     {
         $total = self::cents($amount);
-        if ($total < 10000000) {
-            throw new InvalidArgumentException('Pelan 3 Ansuran memerlukan Jumlah Caj sekurang-kurangnya RM100,000.00. Sila pilih Bayaran Penuh bagi jumlah yang lebih rendah.');
+        if ($total <= 0) {
+            throw new InvalidArgumentException('Jumlah Caj mesti nombor positif.');
         }
-        if ($total <= 20000000) {
-            $first = 10000000;
-            $second = intdiv($total - $first + 1, 2);
-        } else {
-            $first = intdiv($total + 1, 2);
-            $second = intdiv($total + 2, 4);
-        }
+        // Round equal shares to cents; the final installment absorbs the remainder.
+        $first = intdiv($total + 1, 3);
+        $second = $first;
         $third = $total - $first - $second;
         return [
             'amounts' => array_map([self::class, 'money'], [$first, $second, $third]),

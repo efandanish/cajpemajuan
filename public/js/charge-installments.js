@@ -1,7 +1,6 @@
 /* Preview only. PHP ChargeInstallments recalculates and validates on submission. */
 (function (root) {
     'use strict';
-    const minimumMessage = 'Pelan 3 Ansuran memerlukan Jumlah Caj sekurang-kurangnya RM100,000.00. Sila pilih Bayaran Penuh bagi jumlah yang lebih rendah.';
     function cents(value) {
         const match = /^(\d{1,10})(?:\.(\d{1,2}))?$/.exec(String(value));
         if (!match || match[0] !== String(value)) { throw new Error('Jumlah Caj mesti nombor sah dengan maksimum 2 tempat perpuluhan.'); }
@@ -12,9 +11,10 @@
     }
     function principal(value) {
         const total = cents(value);
-        if (total < 10000000) { throw new Error(minimumMessage); }
-        const first = total <= 20000000 ? 10000000 : Math.floor((total + 1) / 2);
-        const second = total <= 20000000 ? Math.floor((total - first + 1) / 2) : Math.floor((total + 2) / 4);
+        if (total <= 0) { throw new Error('Jumlah Caj mesti nombor positif.'); }
+        // Round equal shares to cents; the final installment absorbs the remainder.
+        const first = Math.floor((total + 1) / 3);
+        const second = first;
         return {amounts: [first, second, total - first - second].map(money),
             interest: money(Math.floor(((total - first) * 8 + 50) / 100))};
     }
